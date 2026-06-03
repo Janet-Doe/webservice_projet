@@ -1,3 +1,20 @@
+-- Create User
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'canal_user') THEN
+CREATE ROLE canal_user WITH LOGIN PASSWORD 'canal123';
+END IF;
+END
+$$;
+
+-- Création DB
+CREATE DATABASE canal_db OWNER canal_user;
+
+-- Donne tout les privilèges
+GRANT ALL PRIVILEGES ON DATABASE canal_db TO canal_user;
+
+-- A faire dans après s'être connecté avec canal_user
+
 CREATE TABLE canal (
                        PRIMARY KEY (id),
                        id               SERIAL,
