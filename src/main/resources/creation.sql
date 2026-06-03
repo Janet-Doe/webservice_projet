@@ -27,8 +27,8 @@ CREATE TABLE participe (
 CREATE TABLE utilisateur (
                              PRIMARY KEY (id),
                              id                SERIAL,
-                             nom               VARCHAR(100),
-                             mdp               VARCHAR(100),
+                             nom               VARCHAR(100) NOT NULL,
+                             mdp               BYTEA NOT NULL,
                              dateInscription   TIMESTAMP,
                              derniereConnexion TIMESTAMP
 );
