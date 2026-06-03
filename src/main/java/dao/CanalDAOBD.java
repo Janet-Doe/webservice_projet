@@ -22,7 +22,7 @@ public class CanalDAOBD implements CanalDAO {
     }
 
     @Override
-    public ArrayList<Canal> findAllForUser(Utilisateur utilisateur) {
+    public ArrayList<Canal> findAllJoined(Utilisateur utilisateur) {
         return null;
     }
 
