@@ -9,6 +9,14 @@ public class Utilisateur {
     private Date dateInscription;
     private Date derniereConnexion;
 
+    public Utilisateur(int id, String user, String mdp, Date dateInscription, Date derniereConnexion) {
+        this.id = id;
+        this.user = user;
+        this.mdp = mdp;
+        this.dateInscription = dateInscription;
+        this.derniereConnexion = derniereConnexion;
+    }
+
     public int getId() {
         return id;
     }

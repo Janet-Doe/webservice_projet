@@ -14,6 +14,15 @@ public class Message {
         idAuteur = idEnvoyeur;
     }
 
+    public Message(int id, int idCanal, int idAuteur, String text, Date dateEnvoie, Date lastModification) {
+        this.id = id;
+        this.idCanal = idCanal;
+        this.idAuteur = idAuteur;
+        this.text = text;
+        this.dateEnvoie = dateEnvoie;
+        this.lastModification = lastModification;
+    }
+
     public int getId() {
         return id;
     }

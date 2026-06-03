@@ -10,6 +10,15 @@ public class Canal {
     private Date dateCreation;
     private Date dateModification;
 
+    public Canal(int id, String nom, boolean is_public, int id_createur, Date dateCreation, Date dateModification) {
+        this.nom = nom;
+        this.id = id;
+        this.is_public = is_public;
+        this.id_createur = id_createur;
+        this.dateCreation = dateCreation;
+        this.dateModification = dateModification;
+    }
+
     public int getId() {
         return id;
     }
