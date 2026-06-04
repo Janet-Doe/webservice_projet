@@ -6,11 +6,11 @@ public class Canal {
     private int id;
     private String nom;
     private boolean is_public;
-    private int id_createur;
+    private String id_createur;
     private Date dateCreation;
     private Date dateModification;
 
-    public Canal(int id, String nom, boolean is_public, int id_createur, Date dateCreation, Date dateModification) {
+    public Canal(int id, String nom, boolean is_public, String id_createur, Date dateCreation, Date dateModification) {
         this.nom = nom;
         this.id = id;
         this.is_public = is_public;
@@ -43,11 +43,11 @@ public class Canal {
         this.is_public = is_public;
     }
 
-    public int getId_createur() {
+    public String getId_createur() {
         return id_createur;
     }
 
-    public void setId_createur(int id_createur) {
+    public void setId_createur(String id_createur) {
         this.id_createur = id_createur;
     }
 

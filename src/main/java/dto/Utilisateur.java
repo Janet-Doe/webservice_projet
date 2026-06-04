@@ -3,26 +3,16 @@ package dto;
 import java.util.Date;
 
 public class Utilisateur {
-    private int id;
     private String user;
     private String mdp;
     private Date dateInscription;
     private Date derniereConnexion;
 
-    public Utilisateur(int id, String user, String mdp, Date dateInscription, Date derniereConnexion) {
-        this.id = id;
+    public Utilisateur(String user, String mdp, Date dateInscription, Date derniereConnexion) {
         this.user = user;
         this.mdp = mdp;
         this.dateInscription = dateInscription;
         this.derniereConnexion = derniereConnexion;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getUser() {

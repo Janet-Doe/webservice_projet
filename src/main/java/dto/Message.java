@@ -5,16 +5,12 @@ import java.util.Date;
 public class Message {
     private int id;
     private int idCanal;
-    private int idAuteur;
+    private String idAuteur;
     private String text;
     private Date dateEnvoie;
     private Date lastModification;
 
-    public Message(int idEnvoyeur) {
-        idAuteur = idEnvoyeur;
-    }
-
-    public Message(int id, int idCanal, int idAuteur, String text, Date dateEnvoie, Date lastModification) {
+    public Message(int id, int idCanal, String idAuteur, String text, Date dateEnvoie, Date lastModification) {
         this.id = id;
         this.idCanal = idCanal;
         this.idAuteur = idAuteur;
@@ -47,11 +43,11 @@ public class Message {
         this.dateEnvoie = dateEnvoie;
     }
 
-    public int getIdAuteur() {
+    public String getIdAuteur() {
         return idAuteur;
     }
 
-    public void setIdAuteur(int idAuteur) {
+    public void setIdAuteur(String idAuteur) {
         this.idAuteur = idAuteur;
     }
 
