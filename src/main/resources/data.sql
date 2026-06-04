@@ -48,7 +48,7 @@ INSERT INTO utilisateur (nom, mdp, dateInscription, derniereConnexion) VALUES
 -- ============================================================
 --  Canaux
 -- ============================================================
-INSERT INTO canal (nom, isPublic, dateCreation, dateModification, idUtilisateur) VALUES
+INSERT INTO canal (nom, isPublic, dateCreation, dateModification, idCreateur) VALUES
                                                                                      ('général',      true,  '2024-01-10 09:00:00', '2024-01-10 09:00:00', 1),
                                                                                      ('blague-du-jour', true,  '2024-01-15 10:00:00', '2024-02-01 08:00:00', 2),
                                                                                      ('projet-secret', false, '2024-02-01 12:00:00', '2024-02-01 12:00:00', 3),
@@ -72,7 +72,7 @@ INSERT INTO participe (idCanal, idUtilisateur) VALUES
 -- ============================================================
 --  Messages
 -- ============================================================
-INSERT INTO message (contenu, dateEnvoi, dateModification, idCanal, idUtilisateur) VALUES
+INSERT INTO message (contenu, dateEnvoi, dateModification, idCanal, idAuteur) VALUES
                                                                                        ('Bonjour tout le monde !',              '2024-03-01 08:00:00', '2024-03-01 08:00:00', 1, 1),
                                                                                        ('Salut Alice !',                        '2024-03-01 08:05:00', '2024-03-01 08:05:00', 1, 2),
                                                                                        ('Quoi de neuf ?',                       '2024-03-01 08:10:00', '2024-03-01 08:10:00', 1, 3),

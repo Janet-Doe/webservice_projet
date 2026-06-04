@@ -15,6 +15,8 @@ GRANT ALL PRIVILEGES ON DATABASE canal_db TO canal_user;
 
 -- A faire dans après s'être connecté avec canal_user
 
+
+
 CREATE TABLE canal (
                        PRIMARY KEY (id),
                        id               SERIAL,
@@ -22,7 +24,7 @@ CREATE TABLE canal (
                        isPublic         BOOLEAN NOT NULL,
                        dateCreation     TIMESTAMP,
                        dateModification TIMESTAMP,
-                       idUtilisateur    INT NOT NULL
+                       idCreateur       INT NOT NULL
 );
 
 CREATE TABLE message (
@@ -32,7 +34,7 @@ CREATE TABLE message (
                          dateEnvoi        TIMESTAMP,
                          dateModification TIMESTAMP,
                          idCanal          INT NOT NULL,
-                         idUtilisateur    INT NOT NULL
+                         idAuteur         INT NOT NULL
 );
 
 CREATE TABLE participe (
