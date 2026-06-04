@@ -48,38 +48,38 @@ INSERT INTO utilisateur (nom, mdp, dateInscription, derniereConnexion) VALUES
 -- ============================================================
 --  Canaux
 -- ============================================================
-INSERT INTO canal (nom, isPublic, dateCreation, dateModification, idCreateur) VALUES
-                                                                                     ('général',      true,  '2024-01-10 09:00:00', '2024-01-10 09:00:00', 1),
-                                                                                     ('blague-du-jour', true,  '2024-01-15 10:00:00', '2024-02-01 08:00:00', 2),
-                                                                                     ('projet-secret', false, '2024-02-01 12:00:00', '2024-02-01 12:00:00', 3),
-                                                                                     ('random',       true,  '2024-02-20 14:00:00', '2024-03-01 11:00:00', 1);
+INSERT INTO canal (nom, isPublic, dateCreation, dateModification, nomCreateur) VALUES
+                                                                                   ('général',        true,  '2024-01-10 09:00:00', '2024-01-10 09:00:00', 'alice'),
+                                                                                   ('blague-du-jour', true,  '2024-01-15 10:00:00', '2024-02-01 08:00:00', 'bob'),
+                                                                                   ('projet-secret',  false, '2024-02-01 12:00:00', '2024-02-01 12:00:00', 'charlie'),
+                                                                                   ('random',         true,  '2024-02-20 14:00:00', '2024-03-01 11:00:00', 'alice');
 
 -- ============================================================
 --  Participations
 -- ============================================================
-INSERT INTO participe (idCanal, idUtilisateur) VALUES
-                                                   (1, 1), -- alice   dans général
-                                                   (1, 2), -- bob     dans général
-                                                   (1, 3), -- charlie dans général
-                                                   (1, 4), -- diana   dans général
-                                                   (2, 2), -- bob     dans blague-du-jour
-                                                   (2, 3), -- charlie dans blague-du-jour
-                                                   (3, 1), -- alice   dans projet-secret
-                                                   (3, 3), -- charlie dans projet-secret
-                                                   (4, 1), -- alice   dans random
-                                                   (4, 4); -- diana   dans random
+INSERT INTO participe (idCanal, nomUtilisateur) VALUES
+                                                    (1, 'alice'),   -- alice   dans général
+                                                    (1, 'bob'),     -- bob     dans général
+                                                    (1, 'charlie'), -- charlie dans général
+                                                    (1, 'diana'),   -- diana   dans général
+                                                    (2, 'bob'),     -- bob     dans blague-du-jour
+                                                    (2, 'charlie'), -- charlie dans blague-du-jour
+                                                    (3, 'alice'),   -- alice   dans projet-secret
+                                                    (3, 'charlie'), -- charlie dans projet-secret
+                                                    (4, 'alice'),   -- alice   dans random
+                                                    (4, 'diana');   -- diana   dans random
 
 -- ============================================================
 --  Messages
 -- ============================================================
-INSERT INTO message (contenu, dateEnvoi, dateModification, idCanal, idAuteur) VALUES
-                                                                                       ('Bonjour tout le monde !',              '2024-03-01 08:00:00', '2024-03-01 08:00:00', 1, 1),
-                                                                                       ('Salut Alice !',                        '2024-03-01 08:05:00', '2024-03-01 08:05:00', 1, 2),
-                                                                                       ('Quoi de neuf ?',                       '2024-03-01 08:10:00', '2024-03-01 08:10:00', 1, 3),
-                                                                                       ('Pas grand chose, et vous ?',           '2024-03-01 08:15:00', '2024-03-01 08:15:00', 1, 4),
-                                                                                       ('Pourquoi le vélo tombe ? Parce que c''est deux roues !', '2024-03-10 09:00:00', '2024-03-10 09:00:00', 2, 2),
-                                                                                       ('Haha excellente celle-là',             '2024-03-10 09:10:00', '2024-03-10 09:10:00', 2, 3),
-                                                                                       ('Réunion à 14h pour le projet ?',       '2024-03-12 10:00:00', '2024-03-12 10:00:00', 3, 1),
-                                                                                       ('OK pour moi !',                        '2024-03-12 10:05:00', '2024-03-12 10:05:00', 3, 3),
-                                                                                       ('Quelqu''un a vu le dernier film sorti ?', '2024-03-14 17:00:00', '2024-03-14 17:00:00', 4, 1),
-                                                                                       ('Oui, j''ai adoré !',                   '2024-03-14 17:30:00', '2024-03-14 17:30:00', 4, 4);
+INSERT INTO message (contenu, dateEnvoi, dateModification, idCanal, nomAuteur) VALUES
+                                                                                   ('Bonjour tout le monde !',                                '2024-03-01 08:00:00', '2024-03-01 08:00:00', 1, 'alice'),
+                                                                                   ('Salut Alice !',                                          '2024-03-01 08:05:00', '2024-03-01 08:05:00', 1, 'bob'),
+                                                                                   ('Quoi de neuf ?',                                         '2024-03-01 08:10:00', '2024-03-01 08:10:00', 1, 'charlie'),
+                                                                                   ('Pas grand chose, et vous ?',                             '2024-03-01 08:15:00', '2024-03-01 08:15:00', 1, 'diana'),
+                                                                                   ('Pourquoi le vélo tombe ? Parce que c''est deux roues !', '2024-03-10 09:00:00', '2024-03-10 09:00:00', 2, 'bob'),
+                                                                                   ('Haha excellente celle-là',                               '2024-03-10 09:10:00', '2024-03-10 09:10:00', 2, 'charlie'),
+                                                                                   ('Réunion à 14h pour le projet ?',                         '2024-03-12 10:00:00', '2024-03-12 10:00:00', 3, 'alice'),
+                                                                                   ('OK pour moi !',                                          '2024-03-12 10:05:00', '2024-03-12 10:05:00', 3, 'charlie'),
+                                                                                   ('Quelqu''un a vu le dernier film sorti ?',               '2024-03-14 17:00:00', '2024-03-14 17:00:00', 4, 'alice'),
+                                                                                   ('Oui, j''ai adoré !',                                     '2024-03-14 17:30:00', '2024-03-14 17:30:00', 4, 'diana');

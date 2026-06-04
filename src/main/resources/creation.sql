@@ -24,7 +24,7 @@ CREATE TABLE canal (
                        isPublic         BOOLEAN NOT NULL,
                        dateCreation     TIMESTAMP,
                        dateModification TIMESTAMP,
-                       idCreateur       INT NOT NULL
+                       nomCreateur      VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE message (
@@ -34,28 +34,27 @@ CREATE TABLE message (
                          dateEnvoi        TIMESTAMP,
                          dateModification TIMESTAMP,
                          idCanal          INT NOT NULL,
-                         idAuteur         INT NOT NULL
+                         nomAuteur         VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE participe (
-                           PRIMARY KEY (idCanal, idUtilisateur),
+                           PRIMARY KEY (idCanal, nomUtilisateur),
                            idCanal       INT NOT NULL,
-                           idUtilisateur INT NOT NULL
+                           nomUtilisateur VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE utilisateur (
-                             PRIMARY KEY (id),
-                             id                SERIAL,
+                             PRIMARY KEY (nom),
                              nom               VARCHAR(100) NOT NULL,
                              mdp               BYTEA NOT NULL,
                              dateInscription   TIMESTAMP,
                              derniereConnexion TIMESTAMP
 );
 
-ALTER TABLE canal ADD FOREIGN KEY (idUtilisateur) REFERENCES utilisateur (id);
+ALTER TABLE canal ADD FOREIGN KEY (nomCreateur) REFERENCES utilisateur (nom);
 
-ALTER TABLE message ADD FOREIGN KEY (idUtilisateur) REFERENCES utilisateur (id);
+ALTER TABLE message ADD FOREIGN KEY (nomAuteur) REFERENCES utilisateur (nom);
 ALTER TABLE message ADD FOREIGN KEY (idCanal) REFERENCES canal (id);
 
-ALTER TABLE participe ADD FOREIGN KEY (idUtilisateur) REFERENCES utilisateur (id);
+ALTER TABLE participe ADD FOREIGN KEY (nomUtilisateur) REFERENCES utilisateur (nom);
 ALTER TABLE participe ADD FOREIGN KEY (idCanal) REFERENCES canal (id);
