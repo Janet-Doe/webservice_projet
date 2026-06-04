@@ -112,19 +112,18 @@ public class CanalDAOBD implements CanalDAO {
         }
     }
 
-
     @Override
     public void update(Canal canal) {
         try (Connection conn = db.getConnection()) {
             String query = """
-                            UPDATE canal set  
+                            UPDATE canal set ispublic = ?,
+                                             datemodification = ?,
                             where id = ?;
                             """;
             PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setBoolean(3, canal.isIs_public());
-            stmt.setTimestamp(4, (Timestamp) canal.getDateCreation());
-            stmt.setTimestamp(5, (Timestamp) canal.getDateModification());
-            stmt.setInt(6, canal.getId());
+            stmt.setBoolean(1, canal.isIs_public());
+            stmt.setTimestamp(2, (Timestamp) canal.getDateModification());
+            stmt.setInt(3, canal.getId());
             stmt.executeQuery();
         } catch (SQLException e) {
             System.out.printf("Erreur : %s", e.getMessage());
