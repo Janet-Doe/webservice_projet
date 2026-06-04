@@ -16,22 +16,7 @@ public class UtilisateurDAOBD implements UtilisateurDAO {
     }
 
     @Override
-    public Utilisateur findById(int id) {
+    public Utilisateur findByUser(String name) {
         return null;
-    }
-
-    @Override
-    public void save(Utilisateur utilisateur) {
-
-    }
-
-    @Override
-    public void update(Utilisateur utilisateur) {
-
-    }
-
-    @Override
-    public void delete(Utilisateur utilisateur) {
-
     }
 }

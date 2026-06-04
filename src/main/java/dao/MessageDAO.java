@@ -13,5 +13,5 @@ public interface MessageDAO {
     abstract void save(Message message);
     abstract void update(Message message);
     abstract ArrayList<Message> findAllInCanal(Canal canal);
-    abstract Message findAllFromUser(Utilisateur utilisateur);
+    // get new messages
 }

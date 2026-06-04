@@ -2,10 +2,7 @@ package dao;
 import dto.Canal;
 import dto.Utilisateur;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 
 public class CanalDAOBD implements CanalDAO {
@@ -22,14 +19,14 @@ public class CanalDAOBD implements CanalDAO {
             PreparedStatement stmt = conn.prepareStatement(query);
             ResultSet rs = stmt.executeQuery();
             ArrayList<Canal> canaux = new ArrayList<>();
-            while(!rs.next()){
+            while(rs.next()){
                 canaux.add(new Canal(
                         rs.getInt("id"),
                         rs.getString("nom"),
-                        rs.getBoolean("isPublic"),
-                        rs.getInt("idCreateur"),
-                        rs.getDate("dateCreation"),
-                        rs.getDate("dateModification"))
+                        rs.getBoolean("ispublic"),
+                        rs.getString("nomutilisateur"),
+                        rs.getDate("datecreation"),
+                        rs.getDate("datemodification"))
                 );
             }
             return canaux;
@@ -46,14 +43,14 @@ public class CanalDAOBD implements CanalDAO {
             PreparedStatement stmt = conn.prepareStatement(query);
             ResultSet rs = stmt.executeQuery();
             ArrayList<Canal> canaux = new ArrayList<>();
-            while(!rs.next()){
+            while(rs.next()){
                 canaux.add(new Canal(
                         rs.getInt("id"),
                         rs.getString("nom"),
-                        rs.getBoolean("isPublic"),
-                        rs.getInt("idCreateur"),
-                        rs.getDate("dateCreation"),
-                        rs.getDate("dateModification"))
+                        rs.getBoolean("ispublic"),
+                        rs.getString("nomutilisateur"),
+                        rs.getDate("datecreation"),
+                        rs.getDate("datemodification"))
                 );
             }
             return canaux;
@@ -65,7 +62,31 @@ public class CanalDAOBD implements CanalDAO {
 
     @Override
     public ArrayList<Canal> findAllJoined(Utilisateur utilisateur) {
-        return null;
+        try (Connection conn = db.getConnection()){
+            String query = """
+                    SELECT id, nom, ispublic, idutilisateur, datecreation, datemodification
+                    FROM canal
+                    JOIN participe ON canal.id=participe.idcanal
+                    ON WHERE idutilisateur = ?;
+                    """;
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, utilisateur.getUser());
+            ResultSet rs = stmt.executeQuery();
+            ArrayList<Canal> canaux = new ArrayList<>();
+            while (rs.next()) {
+                canaux.add(new Canal(rs.getInt("id"),
+                        rs.getString("nom"),
+                        rs.getBoolean("ispublic"),
+                        rs.getString("nomutilisateur"),
+                        rs.getDate("datecreation"),
+                        rs.getDate("datemodification"))
+                );
+            }
+            return canaux;
+        } catch (SQLException e){
+            System.out.printf("Erreur : %s", e.getMessage());
+            return null;
+        }
     }
 
     @Override
@@ -80,10 +101,10 @@ public class CanalDAOBD implements CanalDAO {
             } else {
                 return new Canal(id,
                         rs.getString("nom"),
-                        rs.getBoolean("isPublic"),
-                        rs.getInt("idCreateur"),
-                        rs.getDate("dateCreation"),
-                        rs.getDate("dateModification"));
+                        rs.getBoolean("ispublic"),
+                        rs.getString("nomutilisateur"),
+                        rs.getDate("datecreation"),
+                        rs.getDate("datemodification"));
             }
         } catch (SQLException e){
             System.out.printf("Erreur : %s", e.getMessage());
@@ -91,18 +112,22 @@ public class CanalDAOBD implements CanalDAO {
         }
     }
 
-    @Override
-    public void delete(Canal canal) {
-
-    }
-
-    @Override
-    public void save(Canal canal) {
-
-    }
 
     @Override
     public void update(Canal canal) {
-
+        try (Connection conn = db.getConnection()) {
+            String query = """
+                            UPDATE canal set  
+                            where id = ?;
+                            """;
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setBoolean(3, canal.isIs_public());
+            stmt.setTimestamp(4, (Timestamp) canal.getDateCreation());
+            stmt.setTimestamp(5, (Timestamp) canal.getDateModification());
+            stmt.setInt(6, canal.getId());
+            stmt.executeQuery();
+        } catch (SQLException e) {
+            System.out.printf("Erreur : %s", e.getMessage());
+        }
     }
 }
