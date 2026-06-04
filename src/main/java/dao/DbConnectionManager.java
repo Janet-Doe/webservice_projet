@@ -9,9 +9,9 @@ import java.sql.SQLException;
  * Classe singleton sur la source de données
  */
 public class DbConnectionManager {
-  private static final String URL = "jdbc:postgresql://localhost:5432/webdb";
-  private static final String USER = "webdb";
-  private static final String PASSWORD = "1234";
+  private static final String URL = "jdbc:postgresql://localhost:5432/canal_db";
+  private static final String USER = "canal_user";
+  private static final String PASSWORD = "canal123";
   private static DbConnectionManager instance;// Singleton de DbConnectionManager
 
   private DbConnectionManager(){// Constructeur privé pour empêcher l'instanciation directe
