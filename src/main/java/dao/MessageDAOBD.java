@@ -1,12 +1,8 @@
 package dao;
 import dto.Canal;
 import dto.Message;
-import dto.Utilisateur;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 
 public class MessageDAOBD implements MessageDAO {
@@ -42,27 +38,111 @@ public class MessageDAOBD implements MessageDAO {
 
     @Override
     public Message findById(int id) {
-        return null;
+        try (Connection conn = db.getConnection()){
+            String query = "SELECT * FROM message where id=?;";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (!rs.next()){
+                return null;
+            }
+            else {
+                return new Message(
+                        rs.getInt("id"),
+                        rs.getInt("idcanal"),
+                        rs.getString("nomAuteur"),
+                        rs.getString("text"),
+                        rs.getDate("dateEnvoi"),
+                        rs.getDate("dateModification"));
+            }
+        } catch (SQLException e){
+            System.out.printf("Erreur : %s", e.getMessage());
+            return null;
+        }
     }
 
     @Override
     public void delete(Message message) {
-
+        try (Connection conn = db.getConnection()){
+            String query = "delete FROM message where id=?;";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, message.getId());
+            stmt.executeQuery();
+        } catch (SQLException e){
+            System.out.printf("Erreur : %s", e.getMessage());
+        }
     }
 
     @Override
-    public void save(Message message) {
+    public Message create(Message message) {
+        try (Connection conn = db.getConnection()) {
+            // save the message:
+            String query = """
+                            INSERT INTO message (contenu, dateEnvoi, dateModification, idCanal, nomAuteur) VALUES
+                               (?, ?, ?, ?, ?)
+                            """;
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, message.getText());
+            stmt.setTimestamp(2, (Timestamp) message.getDateEnvoie());
+            stmt.setTimestamp(3, (Timestamp) message.getLastModification());
+            stmt.setInt(4, message.getIdCanal());
+            stmt.setString(5, message.getIdAuteur());
+            ResultSet rs = stmt.executeQuery();
 
+            return new Message(rs.getInt("id"),
+                    message.getIdCanal(),
+                    message.getIdAuteur(),
+                    message.getText(),
+                    message.getDateEnvoie(),
+                    message.getLastModification());
+
+        } catch (SQLException e) {
+            System.out.printf("Erreur : %s", e.getMessage());
+            return null;
+        }
     }
 
     @Override
     public void update(Message message) {
-
+        try (Connection conn = db.getConnection()) {
+            String query = """
+                            UPDATE canal set contenu = ?,
+                                             dateModification = ?,
+                            where id = ?;
+                            """;
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, message.getText());
+            stmt.setTimestamp(2, (Timestamp) message.getLastModification());
+            stmt.setInt(3, message.getId());
+            stmt.executeQuery();
+        } catch (SQLException e) {
+            System.out.printf("Erreur : %s", e.getMessage());
+        }
     }
 
     @Override
     public ArrayList<Message> findAllInCanal(Canal canal) {
-        return null;
+        try (Connection conn = db.getConnection()){
+            String query = "SELECT * FROM message where idCanal=?;";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, canal.getId());
+            ResultSet rs = stmt.executeQuery();
+            ArrayList<Message> messages = new ArrayList<>();
+            while(rs.next()){
+                messages.add(new Message(
+                        rs.getInt("id"),
+                        rs.getInt("idcanal"),
+                        rs.getString("nomAuteur"),
+                        rs.getString("text"),
+                        rs.getDate("dateEnvoi"),
+                        rs.getDate("dateModification"))
+                );
+            }
+            return messages;
+        } catch (SQLException e){
+            System.out.printf("Erreur : %s", e.getMessage());
+            return null;
+        }
     }
 
 }
