@@ -112,14 +112,12 @@ public class CanalDAOBD implements CanalDAO {
         }
     }
 
-
     @Override
     public void update(Canal canal) {
         try (Connection conn = db.getConnection()) {
             String query = """
-                            UPDATE canal set 
-                                             ispublic = ,
-                                             datemodification = ,
+                            UPDATE canal set ispublic = ?,
+                                             datemodification = ?,
                             where id = ?;
                             """;
             PreparedStatement stmt = conn.prepareStatement(query);
