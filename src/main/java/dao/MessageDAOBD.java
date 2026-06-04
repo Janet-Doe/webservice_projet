@@ -38,12 +38,39 @@ public class MessageDAOBD implements MessageDAO {
 
     @Override
     public Message findById(int id) {
-        return null;
+        try (Connection conn = db.getConnection()){
+            String query = "SELECT * FROM message where id=?;";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if(!rs.next()){
+                return null;
+            } else {
+                return new Message(
+                        rs.getInt("id"),
+                        rs.getInt("idcanal"),
+                        rs.getString("nomAuteur"),
+                        rs.getString("text"),
+                        rs.getDate("dateEnvoi"),
+                        rs.getDate("dateModification")
+                );
+            }
+        } catch (SQLException e){
+            System.out.printf("Erreur : %s", e.getMessage());
+            return null;
+        }
     }
 
     @Override
     public void delete(Message message) {
-
+        try (Connection conn = db.getConnection()){
+            String query = "delete FROM message where id=?;";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, message.getId());
+            stmt.executeQuery();
+        } catch (SQLException e){
+            System.out.printf("Erreur : %s", e.getMessage());
+        }
     }
 
     @Override
