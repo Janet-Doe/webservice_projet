@@ -24,7 +24,7 @@ public class CanalDAOBD implements CanalDAO {
                         rs.getInt("id"),
                         rs.getString("nom"),
                         rs.getBoolean("ispublic"),
-                        rs.getString("nomutilisateur"),
+                        rs.getString("nomcreateur"),
                         rs.getDate("datecreation"),
                         rs.getDate("datemodification"))
                 );
@@ -48,7 +48,7 @@ public class CanalDAOBD implements CanalDAO {
                         rs.getInt("id"),
                         rs.getString("nom"),
                         rs.getBoolean("ispublic"),
-                        rs.getString("nomutilisateur"),
+                        rs.getString("nomcreateur"),
                         rs.getDate("datecreation"),
                         rs.getDate("datemodification"))
                 );
@@ -77,7 +77,7 @@ public class CanalDAOBD implements CanalDAO {
                 canaux.add(new Canal(rs.getInt("id"),
                         rs.getString("nom"),
                         rs.getBoolean("ispublic"),
-                        rs.getString("nomutilisateur"),
+                        rs.getString("nomcreateur"),
                         rs.getDate("datecreation"),
                         rs.getDate("datemodification"))
                 );
@@ -102,7 +102,7 @@ public class CanalDAOBD implements CanalDAO {
                 return new Canal(id,
                         rs.getString("nom"),
                         rs.getBoolean("ispublic"),
-                        rs.getString("nomutilisateur"),
+                        rs.getString("nomcreateur"),
                         rs.getDate("datecreation"),
                         rs.getDate("datemodification"));
             }

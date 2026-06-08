@@ -133,7 +133,7 @@ public class MessageDAOBD implements MessageDAO {
                         rs.getInt("id"),
                         rs.getInt("idcanal"),
                         rs.getString("nomAuteur"),
-                        rs.getString("text"),
+                        rs.getString("contenu"),
                         rs.getDate("dateEnvoi"),
                         rs.getDate("dateModification"))
                 );
