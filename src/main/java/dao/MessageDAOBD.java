@@ -31,7 +31,7 @@ public class MessageDAOBD implements MessageDAO {
             }
             return messages;
         } catch (SQLException e){
-            System.out.printf("Erreur : %s", e.getMessage());
+            System.err.printf("Erreur : %s", e.getMessage());
             return null;
         }
     }
@@ -56,7 +56,7 @@ public class MessageDAOBD implements MessageDAO {
                 );
             }
         } catch (SQLException e){
-            System.out.printf("Erreur : %s", e.getMessage());
+            System.err.printf("Erreur : %s", e.getMessage());
             return null;
         }
     }
@@ -69,7 +69,7 @@ public class MessageDAOBD implements MessageDAO {
             stmt.setInt(1, message.getId());
             stmt.executeQuery();
         } catch (SQLException e){
-            System.out.printf("Erreur : %s", e.getMessage());
+            System.err.printf("Erreur : %s", e.getMessage());
         }
     }
 
@@ -97,7 +97,7 @@ public class MessageDAOBD implements MessageDAO {
                     message.getLastModification());
 
         } catch (SQLException e) {
-            System.out.printf("Erreur : %s", e.getMessage());
+            System.err.printf("Erreur : %s", e.getMessage());
             return null;
         }
     }
@@ -106,8 +106,8 @@ public class MessageDAOBD implements MessageDAO {
     public void update(Message message) {
         try (Connection conn = db.getConnection()) {
             String query = """
-                            UPDATE canal set contenu = ?,
-                                             dateModification = ?,
+                            UPDATE message set contenu = ?,
+                                             dateModification = ?
                             where id = ?;
                             """;
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -116,7 +116,7 @@ public class MessageDAOBD implements MessageDAO {
             stmt.setInt(3, message.getId());
             stmt.executeQuery();
         } catch (SQLException e) {
-            System.out.printf("Erreur : %s", e.getMessage());
+            System.err.printf("Erreur : %s", e.getMessage());
         }
     }
 
@@ -140,7 +140,7 @@ public class MessageDAOBD implements MessageDAO {
             }
             return messages;
         } catch (SQLException e){
-            System.out.printf("Erreur : %s", e.getMessage());
+            System.err.printf("Erreur : %s", e.getMessage());
             return null;
         }
     }
