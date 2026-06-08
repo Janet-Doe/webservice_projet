@@ -25,8 +25,8 @@ public class MessageDAOBD implements MessageDAO {
                         rs.getInt("idcanal"),
                         rs.getString("nomAuteur"),
                         rs.getString("text"),
-                        rs.getDate("dateEnvoi"),
-                        rs.getDate("dateModification"))
+                        rs.getTimestamp("dateEnvoi"),
+                        rs.getTimestamp("dateModification"))
                 );
             }
             return messages;
@@ -51,8 +51,8 @@ public class MessageDAOBD implements MessageDAO {
                         rs.getInt("idcanal"),
                         rs.getString("nomAuteur"),
                         rs.getString("text"),
-                        rs.getDate("dateEnvoi"),
-                        rs.getDate("dateModification")
+                        rs.getTimestamp("dateEnvoi"),
+                        rs.getTimestamp("dateModification")
                 );
             }
         } catch (SQLException e){
@@ -78,7 +78,7 @@ public class MessageDAOBD implements MessageDAO {
         try (Connection conn = db.getConnection()) {
             String query = """
                             INSERT INTO message (contenu, dateEnvoi, dateModification, idCanal, nomAuteur) VALUES
-                               (?, ?, ?, ?, ?)
+                               (?, ?, ?, ?, ?) returning id;
                             """;
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, message.getText());
@@ -86,8 +86,8 @@ public class MessageDAOBD implements MessageDAO {
             stmt.setTimestamp(3, (Timestamp) message.getLastModification());
             stmt.setInt(4, message.getIdCanal());
             stmt.setString(5, message.getIdAuteur());
-            stmt.executeUpdate();
-            ResultSet rs = stmt.getGeneratedKeys();
+            ResultSet rs = stmt.executeQuery();
+            rs.next();
 
             return new Message(rs.getInt("id"),
                     message.getIdCanal(),
@@ -134,8 +134,8 @@ public class MessageDAOBD implements MessageDAO {
                         rs.getInt("idcanal"),
                         rs.getString("nomAuteur"),
                         rs.getString("contenu"),
-                        rs.getDate("dateEnvoi"),
-                        rs.getDate("dateModification"))
+                        rs.getTimestamp("dateEnvoi"),
+                        rs.getTimestamp("dateModification"))
                 );
             }
             return messages;
