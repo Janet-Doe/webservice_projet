@@ -60,7 +60,14 @@ public class UtilisateurDAOBD implements UtilisateurDAO {
                 String user = rs.getString("nom");
                 
                 byte[] mdpBytes = rs.getBytes("mdp");
-                String mdp = (mdpBytes != null) ? new String(mdpBytes) : null;
+                String mdp = null;
+                if (mdpBytes != null) {
+                    StringBuilder hex = new StringBuilder();
+                    for (byte b : mdpBytes) {
+                        hex.append(String.format("%02x", b));
+                    }
+                    mdp = hex.toString();
+                }
                 
                 java.util.Date dateInscription = rs.getTimestamp("dateInscription");
                 java.util.Date derniereConnexion = rs.getTimestamp("derniereConnexion");
