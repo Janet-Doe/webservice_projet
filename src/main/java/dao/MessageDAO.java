@@ -6,11 +6,10 @@ import dto.Message;
 import java.util.ArrayList;
 
 public interface MessageDAO {
-    abstract ArrayList<Message> findAll();
-    abstract Message findById(int id);
-    abstract void delete(Message message);
-    abstract Message save(Message message);
-    abstract void update(Message message);
-    abstract ArrayList<Message> findAllInCanal(Canal canal);
-    // get new messages
+    ArrayList<Message> findAll();
+    Message findById(int id);
+    boolean delete(Message message);
+    Message save(Message message);
+    void update(Message message);
+    ArrayList<Message> findAllInCanal(Canal canal);
 }

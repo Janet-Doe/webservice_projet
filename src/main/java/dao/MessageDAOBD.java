@@ -62,14 +62,16 @@ public class MessageDAOBD implements MessageDAO {
     }
 
     @Override
-    public void delete(Message message) {
+    public boolean delete(Message message) {
         try (Connection conn = db.getConnection()){
             String query = "delete FROM message where id=?;";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setInt(1, message.getId());
-            stmt.executeQuery();
+            int rs = stmt.executeUpdate();
+            return (rs == 1); // check whether a line has been deleted
         } catch (SQLException e){
             System.err.printf("Erreur : %s", e.getMessage());
+            return false;
         }
     }
 
