@@ -24,14 +24,14 @@ public class CanalDAOBD implements CanalDAO {
                         rs.getInt("id"),
                         rs.getString("nom"),
                         rs.getBoolean("ispublic"),
-                        rs.getString("nomutilisateur"),
+                        rs.getString("nomcreateur"),
                         rs.getDate("datecreation"),
                         rs.getDate("datemodification"))
                 );
             }
             return canaux;
         } catch (SQLException e){
-            System.out.printf("Erreur : %s", e.getMessage());
+            System.err.printf("Erreur : %s", e.getMessage());
             return null;
         }
     }
@@ -48,14 +48,14 @@ public class CanalDAOBD implements CanalDAO {
                         rs.getInt("id"),
                         rs.getString("nom"),
                         rs.getBoolean("ispublic"),
-                        rs.getString("nomutilisateur"),
+                        rs.getString("nomcreateur"),
                         rs.getDate("datecreation"),
                         rs.getDate("datemodification"))
                 );
             }
             return canaux;
         } catch (SQLException e){
-            System.out.printf("Erreur : %s", e.getMessage());
+            System.err.printf("Erreur : %s", e.getMessage());
             return null;
         }
     }
@@ -77,14 +77,14 @@ public class CanalDAOBD implements CanalDAO {
                 canaux.add(new Canal(rs.getInt("id"),
                         rs.getString("nom"),
                         rs.getBoolean("ispublic"),
-                        rs.getString("nomutilisateur"),
+                        rs.getString("nomcreateur"),
                         rs.getDate("datecreation"),
                         rs.getDate("datemodification"))
                 );
             }
             return canaux;
         } catch (SQLException e){
-            System.out.printf("Erreur : %s", e.getMessage());
+            System.err.printf("Erreur : %s", e.getMessage());
             return null;
         }
     }
@@ -102,12 +102,12 @@ public class CanalDAOBD implements CanalDAO {
                 return new Canal(id,
                         rs.getString("nom"),
                         rs.getBoolean("ispublic"),
-                        rs.getString("nomutilisateur"),
+                        rs.getString("nomcreateur"),
                         rs.getDate("datecreation"),
                         rs.getDate("datemodification"));
             }
         } catch (SQLException e){
-            System.out.printf("Erreur : %s", e.getMessage());
+            System.err.printf("Erreur : %s", e.getMessage());
             return null;
         }
     }
@@ -126,7 +126,7 @@ public class CanalDAOBD implements CanalDAO {
             stmt.setInt(3, canal.getId());
             stmt.executeQuery();
         } catch (SQLException e) {
-            System.out.printf("Erreur : %s", e.getMessage());
+            System.err.printf("Erreur : %s", e.getMessage());
         }
     }
 }

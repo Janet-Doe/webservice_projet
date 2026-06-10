@@ -1,16 +1,16 @@
 package dto;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 public class Message {
     private int id;
     private int idCanal;
     private String idAuteur;
     private String text;
-    private Date dateEnvoie;
-    private Date lastModification;
+    private Timestamp dateEnvoie;
+    private Timestamp lastModification;
 
-    public Message(int id, int idCanal, String idAuteur, String text, Date dateEnvoie, Date lastModification) {
+    public Message(int id, int idCanal, String idAuteur, String text, Timestamp dateEnvoie, Timestamp lastModification) {
         this.id = id;
         this.idCanal = idCanal;
         this.idAuteur = idAuteur;
@@ -27,19 +27,19 @@ public class Message {
         this.id = id;
     }
 
-    public Date getLastModification() {
+    public Timestamp getLastModification() {
         return lastModification;
     }
 
-    public void setLastModification(Date lastModification) {
+    public void setLastModification(Timestamp lastModification) {
         this.lastModification = lastModification;
     }
 
-    public Date getDateEnvoie() {
+    public Timestamp getDateEnvoie() {
         return dateEnvoie;
     }
 
-    public void setDateEnvoie(Date dateEnvoie) {
+    public void setDateEnvoie(Timestamp dateEnvoie) {
         this.dateEnvoie = dateEnvoie;
     }
 
