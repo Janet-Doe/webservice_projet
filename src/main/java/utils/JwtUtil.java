@@ -11,8 +11,7 @@ import java.util.Date;
 
 public class JwtUtil {
 
-    // Mets une clé secrète longue (32+ caractères)
-    private static final String SECRET = "ijunyhtgrf-hgfdez-hgfd-hgfcdx";
+    private static final String SECRET = "tyht-thht-iujyhtg-ytg-yjuhtg-adfpmdn-bgvf-nbv-berzfz-ujhytg";
     private static final long EXPIRATION_MS = 1000 * 60 * 60 * 2; 
 
     private static SecretKey getKey() {
