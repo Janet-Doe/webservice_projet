@@ -33,14 +33,22 @@ public class CanalMessageServlet extends HttpServlet {
         resp.setContentType("application/json");
         PrintWriter out = resp.getWriter();
         List<Integer> position = getPosition(req.getPathInfo()); // [id_canal, id_message] from pathinfo
-        
+
         if (position.get(0) == null) { // case: no specified channel => GET all channels
             ArrayList<Canal> channels = canalDAO.findAll();
-            if (channels == null || channels.isEmpty()) {
+            ArrayList<Canal> accessible = new ArrayList<>();
+
+            for (Canal canal : channels) {
+                if (canal.is_public() || hasUserAccess(req, resp, canal) != null){
+                    accessible.add(canal);
+                }
+            }
+
+            if (accessible.isEmpty()) {
                 resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
                 return;
             }
-            out.println(om.writeValueAsString(channels));
+            out.println(om.writeValueAsString(accessible));
             resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }
@@ -50,7 +58,7 @@ public class CanalMessageServlet extends HttpServlet {
             Canal canal = canalDAO.findById(position.get(0));
 
             // verify access to channel
-            if (hasUserAccess(req, resp, canal) == null) return;
+            if ((!canal.is_public()) && (hasUserAccess(req, resp, canal) == null)) return;
 
             if (position.get(1) == null){ // case: no specified message => GET all messages from specified channel
                 ArrayList<Message> messages = messageDAO.findAllInCanal(canal);
@@ -87,18 +95,17 @@ public class CanalMessageServlet extends HttpServlet {
 
         // verify access to channel
         Utilisateur user = hasUserAccess(req, resp, canal);
-        if (user == null) return;
-
-        Map<String,Object> map = getJsonFromRequest(req);
-
-        // check values validity:
-        Object text = map.get("text");
-        if(text == null){
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
+        if(user == null) return;
 
         if(position.get(1) == null){
+            Map<String,Object> map = getJsonFromRequest(req);
+
+            // check values validity:
+            Object text = map.get("text");
+            if(text == null){
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
 
             Message message = new Message(-1, canal.getId(), user.getUser(), (String)text, timestamp, timestamp);
 
@@ -114,7 +121,6 @@ public class CanalMessageServlet extends HttpServlet {
         } else {
             resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         }
-
     }
 
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp)
@@ -165,7 +171,6 @@ public class CanalMessageServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
-        String pathInfo = req.getPathInfo();
         List<Integer> position = getPosition(req.getPathInfo()); // [id_canal, id_message] from pathinfo
 
         if (position.get(1) == null) { // case: "site_url/channels/", "site_url/channels/1/" or "site_url/channels/1/messages/"
@@ -176,6 +181,11 @@ public class CanalMessageServlet extends HttpServlet {
         // case: "site_url/channels/1/messages/2"
         Canal canal = canalDAO.findById(position.get(0));
         Message message = messageDAO.findById(position.get(1));
+
+        if (message == null) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
 
         // check access rights:
         Utilisateur user = hasUserAccess(req, resp, canal);
@@ -229,7 +239,6 @@ public class CanalMessageServlet extends HttpServlet {
     }
 
     private Utilisateur hasUserAccess(HttpServletRequest req, HttpServletResponse resp, Canal canal) {
-        if (canal.is_public()) return null; // case: public channel
         String username = JwtUtil.getUser(req);
         if (username == null){ // case: user not logged in / user didn't use their token
             resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
