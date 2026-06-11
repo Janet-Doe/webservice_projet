@@ -370,7 +370,9 @@
                 return;
             }
             if (!res.ok) {
-                list.innerHTML = '<div class="sidebar-empty">Erreur de chargement.</div>';
+                const errorText = await res.text();
+                console.error(`Erreur HTTP ${res.status}:`, errorText);
+                list.innerHTML = `<div class="sidebar-empty">Erreur ${res.status}. Voir la console (F12).</div>`;
                 return;
             }
 

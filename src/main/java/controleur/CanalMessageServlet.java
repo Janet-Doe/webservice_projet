@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CanalDAO;
 import dao.DAOFactory;
 import dao.MessageDAO;
+import dao.UtilisateurDAO;
 import dto.Canal;
 import dto.Message;
+import dto.Utilisateur;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,30 +24,79 @@ import java.util.Map;
 public class CanalMessageServlet extends HttpServlet {
     CanalDAO canalDAO = DAOFactory.getCanalDAO();
     MessageDAO messageDAO = DAOFactory.getMessageDAO();
+    UtilisateurDAO utilisateurDAO = DAOFactory.getUtilisateurDAO();
+
     static ObjectMapper om = new ObjectMapper();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws IOException {
+        throws IOException {
         resp.setContentType("application/json");
+
+        // 1. Vérification du token JWT
+        String authHeader = req.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token manquant");
+            return;
+        }
+        String username = utils.JwtUtil.validateToken(authHeader.substring(7));
+        if (username == null) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token invalide ou expiré");
+            return;
+        }
+
         PrintWriter out = resp.getWriter();
         String pathInfo = req.getPathInfo();
 
-        if (pathInfo == null || pathInfo.equals("/")) { // case: "site_url/channels/"
-            ArrayList<Canal> channels = canalDAO.findAll();
-            if (channels == null || channels.isEmpty()) {
+        if (pathInfo == null || pathInfo.equals("/")) {
+            // Retourne uniquement les canaux publics + les canaux privés dont l'user est membre
+            Utilisateur utilisateur = utilisateurDAO.findByUser(username);
+            ArrayList<Canal> publics = canalDAO.findAllPublic();
+            ArrayList<Canal> rejoints = canalDAO.findAllJoined(utilisateur);
+            if (publics == null) {
+                publics = new ArrayList<>(); // Évite un crash si findAllPublic() renvoie null
+            }
+
+            // Fusionner sans doublons (seulement si la liste n'est pas nulle)
+            if (rejoints != null) {
+                for (Canal c : rejoints) {
+                    if (publics.stream().noneMatch(p -> p.getId() == c.getId())) {
+                        publics.add(c);
+                    }
+                }
+            }
+
+            if (publics.isEmpty()) {
                 resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
                 return;
             }
-            out.println(om.writeValueAsString(channels));
+            out.println(om.writeValueAsString(publics));
             resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }
+
         // case: "site_url/channels/1/"
         String[] splitPath = pathInfo.split("/");
         try {
             int id = Integer.parseInt(splitPath[1]);
             Canal canal = canalDAO.findById(id);
+
+            if (canal == null) {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Canal introuvable");
+                return;
+            }
+
+            // 2. Vérification d'accès pour les canaux privés
+            if (!canal.isIs_public()) {
+                Utilisateur utilisateur = utilisateurDAO.findByUser(username);
+                ArrayList<Canal> rejoints = canalDAO.findAllJoined(utilisateur);
+                boolean estMembre = rejoints.stream().anyMatch(c -> c.getId() == canal.getId());
+                if (!estMembre) {
+                    resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Accès refusé à ce canal privé");
+                    return;
+                }
+            }
+
             ArrayList<Message> messages = messageDAO.findAllInCanal(canal);
             if (messages == null || messages.isEmpty()) {
                 resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -53,8 +104,9 @@ public class CanalMessageServlet extends HttpServlet {
             }
             out.println(om.writeValueAsString(messages));
             resp.setStatus(HttpServletResponse.SC_OK);
+
         } catch (Exception e) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Canal introuvable");
         }
     }
 

@@ -39,7 +39,7 @@ public class CanalDAOBD implements CanalDAO {
     @Override
     public ArrayList<Canal> findAllPublic() {
         try (Connection conn = db.getConnection()){
-            String query = "SELECT * FROM canal WHERE public=TRUE;";
+            String query = "SELECT * FROM canal WHERE isPublic=TRUE;";
             PreparedStatement stmt = conn.prepareStatement(query);
             ResultSet rs = stmt.executeQuery();
             ArrayList<Canal> canaux = new ArrayList<>();
@@ -62,19 +62,21 @@ public class CanalDAOBD implements CanalDAO {
 
     @Override
     public ArrayList<Canal> findAllJoined(Utilisateur utilisateur) {
-        try (Connection conn = db.getConnection()){
+        try (Connection conn = db.getConnection()) {
             String query = """
-                    SELECT id, nom, ispublic, idutilisateur, datecreation, datemodification
-                    FROM canal
-                    JOIN participe ON canal.id=participe.idcanal
-                    ON WHERE idutilisateur = ?;
-                    """;
+                SELECT canal.id, canal.nom, canal.ispublic, canal.nomcreateur,
+                    canal.datecreation, canal.datemodification
+                FROM canal
+                JOIN participe ON canal.id = participe.idcanal
+                WHERE participe.nomutilisateur = ?;
+                """;
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, utilisateur.getUser());
             ResultSet rs = stmt.executeQuery();
             ArrayList<Canal> canaux = new ArrayList<>();
             while (rs.next()) {
-                canaux.add(new Canal(rs.getInt("id"),
+                canaux.add(new Canal(
+                        rs.getInt("id"),
                         rs.getString("nom"),
                         rs.getBoolean("ispublic"),
                         rs.getString("nomcreateur"),
@@ -83,8 +85,8 @@ public class CanalDAOBD implements CanalDAO {
                 );
             }
             return canaux;
-        } catch (SQLException e){
-            System.err.printf("Erreur : %s", e.getMessage());
+        } catch (SQLException e) {
+            System.err.printf("Erreur findAllJoined : %s", e.getMessage());
             return null;
         }
     }
