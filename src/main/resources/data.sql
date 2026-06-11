@@ -25,21 +25,21 @@ INSERT INTO utilisateur (nom, mdp, dateInscription, derniereConnexion) VALUES
                                                                            ),
                                                                            (
                                                                                'bob',
-                                                                               -- letmein456
+                                                                               -- password123
                                                                                decode('ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'hex'),
                                                                                '2024-01-15 09:00:00',
                                                                                '2024-03-14 10:05:00'
                                                                            ),
                                                                            (
                                                                                'charlie',
-                                                                               -- qwerty789
+                                                                               -- password123
                                                                                decode('ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'hex'),
                                                                                '2024-02-01 11:15:00',
                                                                                '2024-03-13 16:40:00'
                                                                            ),
                                                                            (
                                                                                'diana',
-                                                                               -- secret000
+                                                                               -- password123
                                                                                decode('ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'hex'),
                                                                                '2024-02-20 13:45:00',
                                                                                '2024-03-10 09:30:00'

@@ -74,7 +74,8 @@ public class CanalDAOBD implements CanalDAO {
             ResultSet rs = stmt.executeQuery();
             ArrayList<Canal> canaux = new ArrayList<>();
             while (rs.next()) {
-                canaux.add(new Canal(rs.getInt("id"),
+                canaux.add(new Canal(
+                        rs.getInt("id"),
                         rs.getString("nom"),
                         rs.getBoolean("ispublic"),
                         rs.getString("nomcreateur"),
