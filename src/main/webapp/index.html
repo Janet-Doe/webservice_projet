@@ -33,7 +33,6 @@
             overflow: hidden;
         }
 
-        /* ── Header ── */
         header {
             background: var(--surface);
             border-bottom: 1px solid var(--border);
@@ -78,14 +77,12 @@
 
         .btn-logout:hover { border-color: #c0392b; color: #c0392b; }
 
-        /* ── Layout ── */
         .workspace {
             display: flex;
             flex: 1;
             overflow: hidden;
         }
 
-        /* ── Sidebar ── */
         .sidebar {
             width: var(--sidebar-w);
             background: var(--surface);
@@ -136,22 +133,12 @@
 
         .canal-item.active .canal-icon { color: var(--accent); }
 
-        .canal-badge {
-            margin-left: auto;
-            font-size: 10px;
-            padding: 1px 5px;
-            border-radius: 10px;
-            background: var(--border);
-            color: var(--muted);
-        }
-
         .sidebar-empty {
             padding: 12px 16px;
             font-size: 12px;
             color: var(--muted);
         }
 
-        /* ── Main panel ── */
         .panel {
             flex: 1;
             display: flex;
@@ -178,7 +165,6 @@
             margin-top: 2px;
         }
 
-        /* ── Messages ── */
         .messages {
             flex: 1;
             overflow-y: auto;
@@ -240,7 +226,6 @@
         .placeholder .icon { font-size: 28px; }
         .placeholder p { font-size: 13px; }
 
-        /* ── Composer ── */
         .composer {
             padding: 12px 20px 16px;
             border-top: 1px solid var(--border);
@@ -286,6 +271,20 @@
 
         .btn-send:hover { background: var(--accent-h); }
         .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-refresh {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 5px 12px;
+            font-size: 12px;
+            font-family: inherit;
+            color: var(--muted);
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s;
+        }
+
+        .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
     </style>
 </head>
 <body>
@@ -300,7 +299,6 @@
 
 <div class="workspace">
 
-    <!-- Sidebar canaux -->
     <aside class="sidebar">
         <div class="sidebar-title">Canaux</div>
         <div class="canal-list" id="canal-list">
@@ -308,10 +306,9 @@
         </div>
     </aside>
 
-    <!-- Panel messages -->
     <div class="panel" id="panel">
         <div class="placeholder">
-            <div class="icon"></div>
+            <div class="icon">💬</div>
             <p>Sélectionnez un canal pour afficher les messages.</p>
         </div>
     </div>
@@ -319,9 +316,8 @@
 </div>
 
 <script>
-    const API_BASE = '/webservice_projet-1.0-SNAPSHOT';
-
-    const token      = localStorage.getItem('token');
+    const API_BASE    = '/webservice_projet-1.0-SNAPSHOT';
+    const token       = localStorage.getItem('token');
     const utilisateur = localStorage.getItem('utilisateur');
 
     if (!token || !utilisateur) {
@@ -352,6 +348,14 @@
             + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     }
 
+    function escapeHtml(str) {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
     // ── Canaux ───────────────────────────────────────────
 
     let currentCanal = null;
@@ -359,15 +363,12 @@
     async function loadCanaux() {
         const list = document.getElementById('canal-list');
         try {
-            const res = await fetch(`${API_BASE}/channels/`, {
-                headers: authHeaders()
-            });
+            const res = await fetch(`${API_BASE}/channels/`, { headers: authHeaders() });
 
             if (res.status === 204) {
                 list.innerHTML = '<div class="sidebar-empty">Aucun canal disponible.</div>';
                 return;
             }
-
             if (!res.ok) {
                 list.innerHTML = '<div class="sidebar-empty">Erreur de chargement.</div>';
                 return;
@@ -381,7 +382,7 @@
                 item.className = 'canal-item';
                 item.dataset.id = canal.id;
                 item.innerHTML = `
-                    <span class="canal-icon">${canal.is_public ? '#' : '?'}</span>
+                    <span class="canal-icon">${canal.is_public ? '#' : '🔒'}</span>
                     <span>${canal.nom}</span>
                 `;
                 item.addEventListener('click', () => selectCanal(canal, item));
@@ -407,8 +408,13 @@
 
         panel.innerHTML = `
             <div class="panel-header">
-                <h2>${canal.is_public ? '#' : '🔒'} ${canal.nom}</h2>
-                <p>Créé par ${canal.id_createur}</p>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div>
+                        <h2>${canal.is_public ? '#' : '🔒'} ${canal.nom}</h2>
+                        <p>Créé par ${canal.id_createur}</p>
+                    </div>
+                    <button class="btn-refresh" id="btn-refresh">↺ Rafraîchir</button>
+                </div>
             </div>
             <div class="messages" id="messages"><div class="messages-empty">Chargement…</div></div>
             <div class="composer">
@@ -418,6 +424,7 @@
         `;
 
         document.getElementById('btn-send').addEventListener('click', sendMessage);
+        document.getElementById('btn-refresh').addEventListener('click', () => fetchMessages(canal));
         document.getElementById('msg-input').addEventListener('keydown', e => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -425,18 +432,20 @@
             }
         });
 
-        try {
-            const res = await fetch(`${API_BASE}/channels/${canal.id}/`, {
-                headers: authHeaders()
-            });
+        await fetchMessages(canal);
+    }
 
-            const messagesEl = document.getElementById('messages');
+    async function fetchMessages(canal) {
+        const messagesEl = document.getElementById('messages');
+        if (!messagesEl) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/channels/${canal.id}/`, { headers: authHeaders() });
 
             if (res.status === 204) {
                 messagesEl.innerHTML = '<div class="messages-empty">Aucun message dans ce canal.</div>';
                 return;
             }
-
             if (!res.ok) {
                 messagesEl.innerHTML = '<div class="messages-empty">Erreur de chargement des messages.</div>';
                 return;
@@ -446,8 +455,7 @@
             renderMessages(messages);
 
         } catch (e) {
-            const messagesEl = document.getElementById('messages');
-            if (messagesEl) messagesEl.innerHTML = '<div class="messages-empty">Impossible de charger les messages.</div>';
+            messagesEl.innerHTML = '<div class="messages-empty">Impossible de charger les messages.</div>';
         }
     }
 
@@ -500,14 +508,7 @@
 
             if (res.ok) {
                 input.value = '';
-                // Recharger les messages
-                const messagesRes = await fetch(`${API_BASE}/channels/${currentCanal.id}/`, {
-                    headers: authHeaders()
-                });
-                if (messagesRes.ok) {
-                    const messages = await messagesRes.json();
-                    renderMessages(messages);
-                }
+                await fetchMessages(currentCanal);
             }
         } catch (e) {
             console.error('Erreur envoi message', e);
@@ -515,16 +516,6 @@
             btn.disabled = false;
             input.focus();
         }
-    }
-
-    // ── Utilitaires ───────────────────────────────────────
-
-    function escapeHtml(str) {
-        return str
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
     }
 
     // ── Init ──────────────────────────────────────────────
