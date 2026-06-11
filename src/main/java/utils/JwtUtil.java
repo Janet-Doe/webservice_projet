@@ -4,10 +4,12 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+
 
 public class JwtUtil {
 
@@ -40,4 +42,21 @@ public class JwtUtil {
             return null;
         }
     }
+
+    // Retourne le username à partir d'une requête, null si invalide
+    public static String getUser(HttpServletRequest req) {
+        // Using: © 2024 Maxime MORGE <maxime.morge@univ-lyon1.fr>,
+        // ref: ExempleCM02, BasicAuthentificationFilter class, function boolean isAuthorized(String authorization)
+        String authorization = req.getHeader("Authorization");
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            return null;
+        }
+        try {
+            String token = authorization.substring("BEARER".length()).trim(); // Décoder le token
+            return validateToken(token);
+        } catch (IllegalArgumentException | ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
+    }
+
 }
