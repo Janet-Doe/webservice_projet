@@ -4,24 +4,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.CanalDAO;
 import dao.DAOFactory;
 import dao.MessageDAO;
+import dao.UtilisateurDAO;
 import dto.Canal;
 import dto.Message;
+import dto.Utilisateur;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import utils.JwtUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
 
 @WebServlet("/channels/*")
 public class CanalMessageServlet extends HttpServlet {
     CanalDAO canalDAO = DAOFactory.getCanalDAO();
     MessageDAO messageDAO = DAOFactory.getMessageDAO();
+    UtilisateurDAO utilisateurDAO = DAOFactory.getUtilisateurDAO();
     static ObjectMapper om = new ObjectMapper();
 
     @Override
@@ -29,9 +32,9 @@ public class CanalMessageServlet extends HttpServlet {
             throws IOException {
         resp.setContentType("application/json");
         PrintWriter out = resp.getWriter();
-        String pathInfo = req.getPathInfo();
-
-        if (pathInfo == null || pathInfo.equals("/")) { // case: "site_url/channels/"
+        List<Integer> position = getPosition(req.getPathInfo()); // [id_canal, id_message] from pathinfo
+        
+        if (position.get(0) == null) { // case: no specified channel => GET all channels
             ArrayList<Canal> channels = canalDAO.findAll();
             if (channels == null || channels.isEmpty()) {
                 resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -41,18 +44,29 @@ public class CanalMessageServlet extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_OK);
             return;
         }
-        // case: "site_url/channels/1/"
-        String[] splitPath = pathInfo.split("/");
+
+        // case: specified channel
         try {
-            int id = Integer.parseInt(splitPath[1]);
-            Canal canal = canalDAO.findById(id);
-            ArrayList<Message> messages = messageDAO.findAllInCanal(canal);
-            if (messages == null || messages.isEmpty()) {
-                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                return;
+            Canal canal = canalDAO.findById(position.get(0));
+
+            // verify access to channel
+            if (hasUserAccess(req, resp, canal) == null) return;
+
+            if (position.get(1) == null){ // case: no specified message => GET all messages from specified channel
+                ArrayList<Message> messages = messageDAO.findAllInCanal(canal);
+                if (messages == null || messages.isEmpty()) {
+                    resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                    return;
+                }
+                out.println(om.writeValueAsString(messages));
+                resp.setStatus(HttpServletResponse.SC_OK);
+
+            } else { // case: specified message => GET specified message
+                Message message = messageDAO.findById(position.get(1));
+                out.println(om.writeValueAsString(message));
+                resp.setStatus(HttpServletResponse.SC_OK);
             }
-            out.println(om.writeValueAsString(messages));
-            resp.setStatus(HttpServletResponse.SC_OK);
+
         } catch (Exception e) {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -61,54 +75,19 @@ public class CanalMessageServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws IOException {
-        resp.setContentType("application/json");
-        String pathInfo = req.getPathInfo();
-        if (pathInfo == null || pathInfo.equals("/")) { // case: "site_url/channels/"
-            resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-            return;
-        }
-         // case: "site_url/channels/1/"
-        int canalId = Integer.parseInt(pathInfo.split("/")[1]);
-
-        Map<String,Object> map = getJsonFromRequest(req);
-
-        // check values validity:
-        Object idAuteur = map.get("idAuteur");
-        Object text = map.get("text");
-        if(idAuteur == null || text == null){
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-            return;
-        }
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        Message message = new Message(-1, canalId, (String)idAuteur, (String)text, timestamp, timestamp);
-
-        // save new message:
-        try {
-            message = messageDAO.save(message);
-        } catch (Exception e) {
-            resp.sendError(HttpServletResponse.SC_CONFLICT);
-            return;
-        }
-        resp.setStatus(HttpServletResponse.SC_CREATED);
-        resp.getWriter().println(om.writeValueAsString(message));
-    }
-
-    protected void doPatch(HttpServletRequest req, HttpServletResponse resp)
-            throws IOException {
         resp.setContentType("application/json");
-        String pathInfo = req.getPathInfo();
-        if (pathInfo == null || pathInfo.equals("/")) { // case: "site_url/channels/"
+        List<Integer> position = getPosition(req.getPathInfo()); // [id_canal, id_message] from pathinfo
+        if (position.get(0) == null) { // case: "site_url/channels/" => not allowed
             resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             return;
         }
-        String[] parsedPath = pathInfo.split("/");
-        if (parsedPath.length < 4 || parsedPath[3].isEmpty()) { // case: "site_url/channels/1/" or "site_url/channels/1/messages/"
-            resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-            return;
-        }
-        // case: "site_url/channels/1/messages/2"
-        int canalId = Integer.parseInt(parsedPath[1]);
-        int messageId = Integer.parseInt(parsedPath[3]);
+         // case: "site_url/channels/i"
+        Canal canal = canalDAO.findById(position.get(0));
+
+        // verify access to channel
+        Utilisateur user = hasUserAccess(req, resp, canal);
+        if (user == null) return;
 
         Map<String,Object> map = getJsonFromRequest(req);
 
@@ -118,8 +97,60 @@ public class CanalMessageServlet extends HttpServlet {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
+
+        if(position.get(1) == null){
+
+            Message message = new Message(-1, canal.getId(), user.getUser(), (String)text, timestamp, timestamp);
+
+            // save new message:
+            try {
+                message = messageDAO.save(message);
+            } catch (Exception e) {
+                resp.sendError(HttpServletResponse.SC_CONFLICT);
+                return;
+            }
+            resp.setStatus(HttpServletResponse.SC_CREATED);
+            resp.getWriter().println(om.writeValueAsString(message));
+        } else {
+            resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+        }
+
+    }
+
+    protected void doPatch(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException {
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        Message message = new Message(messageId, canalId, "", (String)text, timestamp, timestamp);
+        resp.setContentType("application/json");
+        List<Integer> position = getPosition(req.getPathInfo()); // [id_canal, id_message] from pathinfo
+
+        if (position.get(1) == null) { // case: "site_url/channels/", "site_url/channels/1/" or "site_url/channels/1/messages/"
+            resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+            return;
+        }
+
+        // case: "site_url/channels/1/messages/2"
+        Canal canal = canalDAO.findById(position.get(0));
+        Message message = messageDAO.findById(position.get(1));
+
+        // verify access to channel
+        Utilisateur user = hasUserAccess(req, resp, canal);
+        if (user == null) return;
+        if (!message.getIdAuteur().equals(user.getUser())){
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        Map<String,Object> map = getJsonFromRequest(req);
+
+        // check values validity:
+        Object text = map.get("text");
+        if(text == null){
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+
+        message.setText((String) text);
+        message.setLastModification(timestamp);
 
         // update message:
         try {
@@ -135,20 +166,24 @@ public class CanalMessageServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
         String pathInfo = req.getPathInfo();
-        if (pathInfo == null || pathInfo.equals("/")) { // case: "site_url/channels/"
-            resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-            return;
-        }
-        String[] parsedPath = pathInfo.split("/");
-        if (parsedPath.length < 4 || parsedPath[3].isEmpty()) { // case: "site_url/channels/1/" or "site_url/channels/1/messages/"
-            resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-            return;
-        }
-        // case: "site_url/channels/1/messages/2"
-        int messageId = Integer.parseInt(parsedPath[3]);
+        List<Integer> position = getPosition(req.getPathInfo()); // [id_canal, id_message] from pathinfo
 
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        Message message = new Message(messageId, -1, "", "", timestamp, timestamp);
+        if (position.get(1) == null) { // case: "site_url/channels/", "site_url/channels/1/" or "site_url/channels/1/messages/"
+            resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+            return;
+        }
+
+        // case: "site_url/channels/1/messages/2"
+        Canal canal = canalDAO.findById(position.get(0));
+        Message message = messageDAO.findById(position.get(1));
+
+        // check access rights:
+        Utilisateur user = hasUserAccess(req, resp, canal);
+        if (user == null) return;
+        if (!(message.getIdAuteur().equals(user.getUser()) || canal.getId_createur().equals(user.getUser()))) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
 
         // delete message:
        if (!messageDAO.delete(message)){
@@ -158,7 +193,7 @@ public class CanalMessageServlet extends HttpServlet {
         }
     }
 
-    protected Map<String, Object> getJsonFromRequest(HttpServletRequest req) throws IOException {
+    private Map<String, Object> getJsonFromRequest(HttpServletRequest req) throws IOException {
         BufferedReader reader = req.getReader();
         String line;
         StringBuilder builder = new StringBuilder();
@@ -168,6 +203,44 @@ public class CanalMessageServlet extends HttpServlet {
         String json = builder.toString();
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(json, Map.class);
+    }
+
+    private List<Integer> getPosition(String pathInfo){
+        // return the position of the path as (id_canal, id_message). Values are null when undefined in the path.
+        List<Integer> positions = new ArrayList<>();
+        positions.add(null);
+        positions.add(null);
+        if (pathInfo == null || pathInfo.equals("/")) {
+            // case: "channels" or "channels/"
+            // -> return (null, null)
+            return positions;
+        }
+        String[] parsedPath = pathInfo.split("/");
+        positions.set(0, Integer.valueOf(parsedPath[1]));
+        if (parsedPath.length < 4 || parsedPath[3].isEmpty()) {
+            // case: "channels/i", "channels/i/" or "channels/i/messages/"
+            // -> return (i, null)
+            return positions;
+        }
+        // case: "channels/i/messages/j" or "channels/i/messages/j/"
+        // -> return (i, j)
+        positions.set(1, Integer.valueOf(parsedPath[3]));
+        return positions;
+    }
+
+    private Utilisateur hasUserAccess(HttpServletRequest req, HttpServletResponse resp, Canal canal) {
+        if (canal.is_public()) return null; // case: public channel
+        String username = JwtUtil.getUser(req);
+        if (username == null){ // case: user not logged in / user didn't use their token
+            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return null;
+        }
+        Utilisateur user = utilisateurDAO.findByUser(username);
+        if (!canalDAO.findAllJoined(user).contains(canal)) { // case : user logged in but not allowed in channel
+            resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return null;
+        }
+        return user; // case: user logged in and allowed in channel
     }
 
 }
