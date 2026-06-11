@@ -39,7 +39,7 @@ public class CanalDAOBD implements CanalDAO {
     @Override
     public ArrayList<Canal> findAllPublic() {
         try (Connection conn = db.getConnection()){
-            String query = "SELECT * FROM canal WHERE public=TRUE;";
+            String query = "SELECT * FROM canal WHERE ispublic=TRUE;";
             PreparedStatement stmt = conn.prepareStatement(query);
             ResultSet rs = stmt.executeQuery();
             ArrayList<Canal> canaux = new ArrayList<>();
@@ -64,10 +64,10 @@ public class CanalDAOBD implements CanalDAO {
     public ArrayList<Canal> findAllJoined(Utilisateur utilisateur) {
         try (Connection conn = db.getConnection()){
             String query = """
-                    SELECT id, nom, ispublic, idutilisateur, datecreation, datemodification
+                    SELECT id, nom, ispublic, nomcreateur, datecreation, datemodification
                     FROM canal
                     JOIN participe ON canal.id=participe.idcanal
-                    ON WHERE idutilisateur = ?;
+                    WHERE nomutilisateur = ?;
                     """;
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setString(1, utilisateur.getUser());
@@ -121,7 +121,7 @@ public class CanalDAOBD implements CanalDAO {
                             where id = ?;
                             """;
             PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setBoolean(1, canal.isIs_public());
+            stmt.setBoolean(1, canal.is_public());
             stmt.setTimestamp(2, (Timestamp) canal.getDateModification());
             stmt.setInt(3, canal.getId());
             stmt.executeQuery();

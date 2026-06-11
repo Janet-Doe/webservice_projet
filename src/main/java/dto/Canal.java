@@ -35,7 +35,7 @@ public class Canal {
         this.nom = nom;
     }
 
-    public boolean isIs_public() {
+    public boolean is_public() {
         return is_public;
     }
 
@@ -66,4 +66,12 @@ public class Canal {
     public void setDateModification(Date dateModification) {
         this.dateModification = dateModification;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (! (o instanceof Canal)) return false;
+        Canal canal = (Canal) o;
+        return id == canal.getId();
+    }
+
 }

@@ -24,7 +24,7 @@ public class MessageDAOBD implements MessageDAO {
                         rs.getInt("id"),
                         rs.getInt("idcanal"),
                         rs.getString("nomAuteur"),
-                        rs.getString("text"),
+                        rs.getString("contenu"),
                         rs.getTimestamp("dateEnvoi"),
                         rs.getTimestamp("dateModification"))
                 );
@@ -50,7 +50,7 @@ public class MessageDAOBD implements MessageDAO {
                         rs.getInt("id"),
                         rs.getInt("idcanal"),
                         rs.getString("nomAuteur"),
-                        rs.getString("text"),
+                        rs.getString("contenu"),
                         rs.getTimestamp("dateEnvoi"),
                         rs.getTimestamp("dateModification")
                 );
