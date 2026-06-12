@@ -285,6 +285,75 @@
         }
 
         .btn-refresh:hover { border-color: var(--accent); color: var(--accent); }
+
+        .msg-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .msg-actions {
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.12s;
+        }
+
+        .msg:hover .msg-actions { opacity: 1; }
+
+        .msg-action-btn {
+            background: none;
+            border: none;
+            font-size: 11px;
+            color: var(--muted);
+            cursor: pointer;
+            font-family: inherit;
+            padding: 0;
+            text-decoration: underline;
+        }
+
+        .msg-action-btn:hover { color: var(--accent); }
+        .msg-action-btn.delete:hover { color: #c0392b; }
+
+        .msg-edit-area {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            margin-top: 2px;
+        }
+
+        .msg-edit-area textarea {
+            flex: 1;
+            resize: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 6px 10px;
+            font-size: 14px;
+            font-family: inherit;
+            background: var(--surface);
+            color: var(--text);
+            outline: none;
+            line-height: 1.4;
+        }
+
+        .msg-edit-area textarea:focus { border-color: var(--accent); }
+
+        .btn-mini {
+            border: none;
+            border-radius: var(--radius);
+            padding: 6px 10px;
+            font-size: 12px;
+            font-family: inherit;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-mini.save { background: var(--accent); color: #fff; }
+        .btn-mini.save:hover { background: var(--accent-h); }
+        .btn-mini.cancel { background: none; border: 1px solid var(--border); color: var(--muted); }
+        .btn-mini.cancel:hover { border-color: #c0392b; color: #c0392b; }
+
     </style>
 </head>
 <body>
@@ -370,9 +439,7 @@
                 return;
             }
             if (!res.ok) {
-                const errorText = await res.text();
-                console.error(`Erreur HTTP ${res.status}:`, errorText);
-                list.innerHTML = `<div class="sidebar-empty">Erreur ${res.status}. Voir la console (F12).</div>`;
+                list.innerHTML = '<div class="sidebar-empty">Erreur de chargement.</div>';
                 return;
             }
 
@@ -384,7 +451,7 @@
                 item.className = 'canal-item';
                 item.dataset.id = canal.id;
                 item.innerHTML = `
-                    <span class="canal-icon">${canal.is_public ? '#' : '🔒'}</span>
+                    <span class="canal-icon">${canal.is_public ? '#' : '#'}</span>
                     <span>${canal.nom}</span>
                 `;
                 item.addEventListener('click', () => selectCanal(canal, item));
@@ -412,7 +479,7 @@
             <div class="panel-header">
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <div>
-                        <h2>${canal.is_public ? '#' : '🔒'} ${canal.nom}</h2>
+                        <h2>${canal.is_public ? '#' : '#'} ${canal.nom}</h2>
                         <p>Créé par ${canal.id_createur}</p>
                     </div>
                     <button class="btn-refresh" id="btn-refresh">↺ Rafraîchir</button>
@@ -470,22 +537,121 @@
             return;
         }
 
+        const isAdmin = currentCanal && currentCanal.id_createur === utilisateur;
+
         messagesEl.innerHTML = '';
         messages.forEach(msg => {
             const isMe = msg.idAuteur === utilisateur;
+            const canEdit = isMe;
+            const canDelete = isMe || isAdmin;
+
             const div = document.createElement('div');
             div.className = 'msg';
+
+            let actionsHtml = '';
+            if (canEdit) actionsHtml += '<button class="msg-action-btn edit">Modifier</button>';
+            if (canDelete) actionsHtml += '<button class="msg-action-btn delete">Supprimer</button>';
+
             div.innerHTML = `
-                <div class="msg-meta">
-                    <span class="msg-author ${isMe ? 'me' : ''}">${msg.idAuteur}</span>
-                    <span class="msg-date">${formatDate(msg.dateEnvoie)}</span>
+                <div class="msg-header">
+                    <div class="msg-meta">
+                        <span class="msg-author ${isMe ? 'me' : ''}">${msg.idAuteur}</span>
+                        <span class="msg-date">${formatDate(msg.dateEnvoie)}</span>
+                    </div>
+                    ${actionsHtml ? `<div class="msg-actions">${actionsHtml}</div>` : ''}
                 </div>
                 <div class="msg-text">${escapeHtml(msg.text)}</div>
             `;
+
+            if (canEdit) {
+                div.querySelector('.edit').addEventListener('click', () => startEditMessage(div, msg));
+            }
+            if (canDelete) {
+                div.querySelector('.delete').addEventListener('click', () => deleteMessage(msg));
+            }
+
             messagesEl.appendChild(div);
         });
 
         messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function startEditMessage(div, msg) {
+        const textEl = div.querySelector('.msg-text');
+        const original = msg.text;
+
+        const editArea = document.createElement('div');
+        editArea.className = 'msg-edit-area';
+        editArea.innerHTML = `
+            <textarea rows="1">${escapeHtml(original)}</textarea>
+            <button class="btn-mini save">Enregistrer</button>
+            <button class="btn-mini cancel">Annuler</button>
+        `;
+
+        textEl.replaceWith(editArea);
+
+        const textarea = editArea.querySelector('textarea');
+        textarea.focus();
+        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+
+        editArea.querySelector('.cancel').addEventListener('click', () => {
+            const restored = document.createElement('div');
+            restored.className = 'msg-text';
+            restored.textContent = original;
+            editArea.replaceWith(restored);
+        });
+
+        const save = async () => {
+            const newText = textarea.value.trim();
+            if (!newText) return;
+            await editMessage(msg, newText);
+        };
+
+        editArea.querySelector('.save').addEventListener('click', save);
+
+        textarea.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                save();
+            }
+        });
+    }
+
+    async function editMessage(msg, newText) {
+        try {
+            const res = await fetch(`${API_BASE}/channels/${msg.idCanal}/messages/${msg.id}`, {
+                method: 'PATCH',
+                headers: authHeaders(),
+                body: JSON.stringify({ text: newText })
+            });
+
+            if (res.ok) {
+                await fetchMessages(currentCanal);
+            } else {
+                alert('Impossible de modifier ce message.');
+            }
+        } catch (e) {
+            alert('Erreur réseau lors de la modification.');
+        }
+    }
+
+    async function deleteMessage(msg) {
+        if (!confirm('Supprimer ce message ?')) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/channels/${msg.idCanal}/messages/${msg.id}`, {
+                method: 'DELETE',
+                headers: authHeaders()
+            });
+
+            if (res.ok) {
+                await fetchMessages(currentCanal);
+            } else {
+                alert('Impossible de supprimer ce message.');
+            }
+        } catch (e) {
+            alert('Erreur réseau lors de la suppression.');
+        }
     }
 
     // ── Envoi message ─────────────────────────────────────

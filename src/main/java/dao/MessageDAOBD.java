@@ -125,7 +125,7 @@ public class MessageDAOBD implements MessageDAO {
     @Override
     public ArrayList<Message> findAllInCanal(Canal canal) {
         try (Connection conn = db.getConnection()){
-            String query = "SELECT * FROM message where idCanal=?;";
+            String query = "SELECT * FROM message where idCanal=? order by id;";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setInt(1, canal.getId());
             ResultSet rs = stmt.executeQuery();

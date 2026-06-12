@@ -8,6 +8,7 @@ import dao.UtilisateurDAO;
 import dto.Canal;
 import dto.Message;
 import dto.Utilisateur;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +27,16 @@ public class CanalMessageServlet extends HttpServlet {
     MessageDAO messageDAO = DAOFactory.getMessageDAO();
     UtilisateurDAO utilisateurDAO = DAOFactory.getUtilisateurDAO();
     static ObjectMapper om = new ObjectMapper();
+
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        if ("PATCH".equalsIgnoreCase(req.getMethod())) {
+            doPatch(req, resp);
+        } else {
+            super.service(req, resp);
+        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
