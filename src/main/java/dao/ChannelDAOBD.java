@@ -15,7 +15,7 @@ public class ChannelDAOBD implements ChannelDAO {
     @Override
     public ArrayList<Channel> findAll() {
         try (Connection conn = db.getConnection()){
-            String query = "SELECT * FROM channel;";
+            String query = "SELECT * FROM canal;";
             PreparedStatement stmt = conn.prepareStatement(query);
             ResultSet rs = stmt.executeQuery();
             ArrayList<Channel> canaux = new ArrayList<>();
@@ -39,7 +39,7 @@ public class ChannelDAOBD implements ChannelDAO {
     @Override
     public ArrayList<Channel> findAllPublic() {
         try (Connection conn = db.getConnection()){
-            String query = "SELECT * FROM channel WHERE ispublic=TRUE;";
+            String query = "SELECT * FROM canal WHERE ispublic=TRUE;";
             PreparedStatement stmt = conn.prepareStatement(query);
             ResultSet rs = stmt.executeQuery();
             ArrayList<Channel> canaux = new ArrayList<>();
@@ -65,8 +65,8 @@ public class ChannelDAOBD implements ChannelDAO {
         try (Connection conn = db.getConnection()){
             String query = """
                     SELECT id, nom, ispublic, nomcreateur, datecreation, datemodification
-                    FROM channel
-                    JOIN participe ON channel.id=participe.idcanal
+                    FROM canal
+                    JOIN participe ON canal.id=participe.idcanal
                     WHERE nomutilisateur = ?;
                     """;
             PreparedStatement stmt = conn.prepareStatement(query);
@@ -93,7 +93,7 @@ public class ChannelDAOBD implements ChannelDAO {
     @Override
     public Channel findById(int id) {
         try (Connection conn = db.getConnection()){
-            String query = "SELECT * FROM channel WHERE id = ?;";
+            String query = "SELECT * FROM canal WHERE id = ?;";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
@@ -117,7 +117,7 @@ public class ChannelDAOBD implements ChannelDAO {
     public void update(Channel channel) {
         try (Connection conn = db.getConnection()) {
             String query = """
-                            UPDATE channel set ispublic = ?,
+                            UPDATE canal set ispublic = ?,
                                              datemodification = ?,
                             where id = ?;
                             """;
