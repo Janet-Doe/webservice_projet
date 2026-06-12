@@ -2,13 +2,13 @@ package dto;
 
 import java.util.Date;
 
-public class Utilisateur {
+public class User {
     private String user;
     private String mdp;
     private Date dateInscription;
     private Date derniereConnexion;
 
-    public Utilisateur(String user, String mdp, Date dateInscription, Date derniereConnexion) {
+    public User(String user, String mdp, Date dateInscription, Date derniereConnexion) {
         this.user = user;
         this.mdp = mdp;
         this.dateInscription = dateInscription;

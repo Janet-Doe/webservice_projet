@@ -1,5 +1,5 @@
 package dao;
-import dto.Utilisateur;
+import dto.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -7,16 +7,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class UtilisateurDAOBD implements UtilisateurDAO {
+public class UserDAOBD implements UserDAO {
     private final DbConnectionManager db;
 
-    protected UtilisateurDAOBD(DbConnectionManager dbConnectionManager) {
+    protected UserDAOBD(DbConnectionManager dbConnectionManager) {
         this.db = dbConnectionManager;
     }
 
     @Override
-    public ArrayList<Utilisateur> findAll() {
-        ArrayList<Utilisateur> utilisateurs = new ArrayList<>();
+    public ArrayList<User> findAll() {
+        ArrayList<User> utilisateurs = new ArrayList<>();
         String query = "SELECT nom, mdp, dateInscription, derniereConnexion FROM utilisateur";
 
         try (Connection conn = db.getConnection();
@@ -32,7 +32,7 @@ public class UtilisateurDAOBD implements UtilisateurDAO {
                 java.util.Date dateInscription = rs.getTimestamp("dateInscription");
                 java.util.Date derniereConnexion = rs.getTimestamp("derniereConnexion");
 
-                Utilisateur u = new Utilisateur(user, mdp, dateInscription, derniereConnexion);
+                User u = new User(user, mdp, dateInscription, derniereConnexion);
 
                 utilisateurs.add(u);
             }
@@ -46,8 +46,8 @@ public class UtilisateurDAOBD implements UtilisateurDAO {
     }
 
     @Override
-    public Utilisateur findByUser(String name) {
-        Utilisateur utilisateur = null;
+    public User findByUser(String name) {
+        User utilisateur = null;
     String query = "SELECT nom, mdp, dateInscription, derniereConnexion FROM utilisateur WHERE nom = ?";
 
     try (Connection conn = db.getConnection();
@@ -72,7 +72,7 @@ public class UtilisateurDAOBD implements UtilisateurDAO {
                 java.util.Date dateInscription = rs.getTimestamp("dateInscription");
                 java.util.Date derniereConnexion = rs.getTimestamp("derniereConnexion");
 
-                utilisateur = new Utilisateur(user, mdp, dateInscription, derniereConnexion);
+                utilisateur = new User(user, mdp, dateInscription, derniereConnexion);
             }
         }
         

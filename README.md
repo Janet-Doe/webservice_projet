@@ -38,12 +38,12 @@ Si ce dernier fournit un token valide, les canals privés auxquels il a accès s
 > ```
 
 
-### Page canal / page messages d'un canal
+### Page channel / page messages d'un channel
 
-[Lien de la page du 1er canal](http://localhost:8080/webservice_projet_war_exploded/channels/1)
+[Lien de la page du 1er channel](http://localhost:8080/webservice_projet_war_exploded/channels/1)
 
-- **Méthode GET** : consultations des messages du canal.
-Si le canal est privé, l'utilisateur doit fournir un token valide pour sa consultation. 
+- **Méthode GET** : consultations des messages du channel.
+Si le channel est privé, l'utilisateur doit fournir un token valide pour sa consultation. 
 
 *Exemple :*
 > ```
@@ -51,9 +51,9 @@ Si le canal est privé, l'utilisateur doit fournir un token valide pour sa consu
 > -H "Authorization: Bearer <token>"
 > ```
 
-- **Méthode POST** : publication d'un message dans le canal. 
+- **Méthode POST** : publication d'un message dans le channel. 
 Le contenu du message est fourni sous format JSON avec la balise "text". 
-L'authentification via un token est obligatoire, à canal privé ou non. 
+L'authentification via un token est obligatoire, à channel privé ou non. 
 
 *Exemple :*
 > ```
@@ -66,10 +66,10 @@ L'authentification via un token est obligatoire, à canal privé ou non.
 
 ### Page message
 
-[Lien de la page du 1er message, dans le 1er canal](http://localhost:8080/webservice_projet_war_exploded/channels/1/messages/1)
+[Lien de la page du 1er message, dans le 1er channel](http://localhost:8080/webservice_projet_war_exploded/channels/1/messages/1)
 
 - **Méthode GET** : consultation du message.
-  Si le canal est privé, l'utilisateur doit fournir un token valide pour sa consultation.
+  Si le channel est privé, l'utilisateur doit fournir un token valide pour sa consultation.
 
 *Exemple :*
 > ```
@@ -91,7 +91,7 @@ L'authentification via un token est obligatoire, à canal privé ou non.
 > ```
 
 - **Méthode DELETE** : délétion du message.
-  L'utilisateur doit fournir un token vérifiant qu'il est l'auteur du message ou l'administrateur du canal.
+  L'utilisateur doit fournir un token vérifiant qu'il est l'auteur du message ou l'administrateur du channel.
 
 *Exemple :*
 > ```

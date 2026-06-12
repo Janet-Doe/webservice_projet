@@ -2,8 +2,8 @@ package controleur;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dao.DAOFactory;
-import dao.UtilisateurDAO;
-import dto.Utilisateur;
+import dao.UserDAO;
+import dto.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -18,12 +18,12 @@ import java.util.Map;
 @WebServlet("/users/*")
 public class UserServlet extends HttpServlet {
 
-    private UtilisateurDAO utilisateurDAO;
+    private UserDAO userDAO;
     private ObjectMapper objectMapper;
 
     @Override
     public void init() throws ServletException {
-        this.utilisateurDAO = DAOFactory.getUtilisateurDAO();
+        this.userDAO = DAOFactory.getUtilisateurDAO();
         this.objectMapper = new ObjectMapper();
     }
 
@@ -55,7 +55,7 @@ public class UserServlet extends HttpServlet {
                 return;
             }
 
-            Utilisateur utilisateur = utilisateurDAO.findByUser(nom);
+            User utilisateur = userDAO.findByUser(nom);
 
             if (utilisateur == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

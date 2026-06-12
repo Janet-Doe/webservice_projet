@@ -2,7 +2,7 @@ package dto;
 
 import java.util.Date;
 
-public class Canal {
+public class Channel {
     private int id;
     private String nom;
     private boolean is_public;
@@ -10,7 +10,7 @@ public class Canal {
     private Date dateCreation;
     private Date dateModification;
 
-    public Canal(int id, String nom, boolean is_public, String id_createur, Date dateCreation, Date dateModification) {
+    public Channel(int id, String nom, boolean is_public, String id_createur, Date dateCreation, Date dateModification) {
         this.nom = nom;
         this.id = id;
         this.is_public = is_public;
@@ -69,9 +69,9 @@ public class Canal {
 
     @Override
     public boolean equals(Object o) {
-        if (! (o instanceof Canal)) return false;
-        Canal canal = (Canal) o;
-        return id == canal.getId();
+        if (! (o instanceof Channel)) return false;
+        Channel channel = (Channel) o;
+        return id == channel.getId();
     }
 
 }

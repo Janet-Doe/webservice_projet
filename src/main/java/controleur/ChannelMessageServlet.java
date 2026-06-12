@@ -1,13 +1,13 @@
 package controleur;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dao.CanalDAO;
+import dao.ChannelDAO;
 import dao.DAOFactory;
 import dao.MessageDAO;
-import dao.UtilisateurDAO;
-import dto.Canal;
+import dao.UserDAO;
+import dto.Channel;
 import dto.Message;
-import dto.Utilisateur;
+import dto.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -22,10 +22,10 @@ import java.sql.Timestamp;
 import java.util.*;
 
 @WebServlet("/channels/*")
-public class CanalMessageServlet extends HttpServlet {
-    CanalDAO canalDAO = DAOFactory.getCanalDAO();
+public class ChannelMessageServlet extends HttpServlet {
+    ChannelDAO channelDAO = DAOFactory.getCanalDAO();
     MessageDAO messageDAO = DAOFactory.getMessageDAO();
-    UtilisateurDAO utilisateurDAO = DAOFactory.getUtilisateurDAO();
+    UserDAO userDAO = DAOFactory.getUtilisateurDAO();
     static ObjectMapper om = new ObjectMapper();
 
     @Override
@@ -46,12 +46,12 @@ public class CanalMessageServlet extends HttpServlet {
         List<Integer> position = getPosition(req.getPathInfo()); // [id_canal, id_message] from pathinfo
 
         if (position.get(0) == null) { // case: no specified channel => GET all channels
-            ArrayList<Canal> channels = canalDAO.findAll();
-            ArrayList<Canal> accessible = new ArrayList<>();
+            ArrayList<Channel> channels = channelDAO.findAll();
+            ArrayList<Channel> accessible = new ArrayList<>();
 
-            for (Canal canal : channels) {
-                if (canal.is_public() || hasUserAccess(req, resp, canal) != null){
-                    accessible.add(canal);
+            for (Channel channel : channels) {
+                if (channel.is_public() || hasUserAccess(req, resp, channel) != null){
+                    accessible.add(channel);
                 }
             }
 
@@ -66,13 +66,13 @@ public class CanalMessageServlet extends HttpServlet {
 
         // case: specified channel
         try {
-            Canal canal = canalDAO.findById(position.get(0));
+            Channel channel = channelDAO.findById(position.get(0));
 
             // verify access to channel
-            if ((!canal.is_public()) && (hasUserAccess(req, resp, canal) == null)) return;
+            if ((!channel.is_public()) && (hasUserAccess(req, resp, channel) == null)) return;
 
             if (position.get(1) == null){ // case: no specified message => GET all messages from specified channel
-                ArrayList<Message> messages = messageDAO.findAllInCanal(canal);
+                ArrayList<Message> messages = messageDAO.findAllInCanal(channel);
                 if (messages == null || messages.isEmpty()) {
                     resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
                     return;
@@ -102,10 +102,10 @@ public class CanalMessageServlet extends HttpServlet {
             return;
         }
          // case: "site_url/channels/i"
-        Canal canal = canalDAO.findById(position.get(0));
+        Channel channel = channelDAO.findById(position.get(0));
 
         // verify access to channel
-        Utilisateur user = hasUserAccess(req, resp, canal);
+        User user = hasUserAccess(req, resp, channel);
         if(user == null) return;
 
         if(position.get(1) == null){
@@ -118,7 +118,7 @@ public class CanalMessageServlet extends HttpServlet {
                 return;
             }
 
-            Message message = new Message(-1, canal.getId(), user.getUser(), (String)text, timestamp, timestamp);
+            Message message = new Message(-1, channel.getId(), user.getUser(), (String)text, timestamp, timestamp);
 
             // save new message:
             try {
@@ -146,11 +146,11 @@ public class CanalMessageServlet extends HttpServlet {
         }
 
         // case: "site_url/channels/1/messages/2"
-        Canal canal = canalDAO.findById(position.get(0));
+        Channel channel = channelDAO.findById(position.get(0));
         Message message = messageDAO.findById(position.get(1));
 
         // verify access to channel
-        Utilisateur user = hasUserAccess(req, resp, canal);
+        User user = hasUserAccess(req, resp, channel);
         if (user == null) return;
         if (!message.getIdAuteur().equals(user.getUser())){
             resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
@@ -190,7 +190,7 @@ public class CanalMessageServlet extends HttpServlet {
         }
 
         // case: "site_url/channels/1/messages/2"
-        Canal canal = canalDAO.findById(position.get(0));
+        Channel channel = channelDAO.findById(position.get(0));
         Message message = messageDAO.findById(position.get(1));
 
         if (message == null) {
@@ -199,9 +199,9 @@ public class CanalMessageServlet extends HttpServlet {
         }
 
         // check access rights:
-        Utilisateur user = hasUserAccess(req, resp, canal);
+        User user = hasUserAccess(req, resp, channel);
         if (user == null) return;
-        if (!(message.getIdAuteur().equals(user.getUser()) || canal.getId_createur().equals(user.getUser()))) {
+        if (!(message.getIdAuteur().equals(user.getUser()) || channel.getId_createur().equals(user.getUser()))) {
             resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
@@ -249,14 +249,14 @@ public class CanalMessageServlet extends HttpServlet {
         return positions;
     }
 
-    private Utilisateur hasUserAccess(HttpServletRequest req, HttpServletResponse resp, Canal canal) {
+    private User hasUserAccess(HttpServletRequest req, HttpServletResponse resp, Channel channel) {
         String username = JwtUtil.getUser(req);
         if (username == null){ // case: user not logged in / user didn't use their token
             resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return null;
         }
-        Utilisateur user = utilisateurDAO.findByUser(username);
-        if (!canalDAO.findAllJoined(user).contains(canal)) { // case : user logged in but not allowed in channel
+        User user = userDAO.findByUser(username);
+        if (!channelDAO.findAllJoined(user).contains(channel)) { // case : user logged in but not allowed in channel
             resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return null;
         }

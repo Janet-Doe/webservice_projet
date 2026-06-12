@@ -102,13 +102,13 @@
             color: var(--muted);
         }
 
-        .canal-list {
+        .channel-list {
             flex: 1;
             overflow-y: auto;
             padding: 0 8px 16px;
         }
 
-        .canal-item {
+        .channel-item {
             display: flex;
             align-items: center;
             gap: 8px;
@@ -121,17 +121,17 @@
             user-select: none;
         }
 
-        .canal-item:hover { background: var(--bg); }
-        .canal-item.active { background: var(--active-bg); color: var(--accent); font-weight: 500; }
+        .channel-item:hover { background: var(--bg); }
+        .channel-item.active { background: var(--active-bg); color: var(--accent); font-weight: 500; }
 
-        .canal-icon {
+        .channel-icon {
             font-family: var(--mono);
             font-size: 12px;
             color: var(--muted);
             flex-shrink: 0;
         }
 
-        .canal-item.active .canal-icon { color: var(--accent); }
+        .channel-item.active .channel-icon { color: var(--accent); }
 
         .sidebar-empty {
             padding: 12px 16px;
@@ -370,7 +370,7 @@
 
     <aside class="sidebar">
         <div class="sidebar-title">Canaux</div>
-        <div class="canal-list" id="canal-list">
+        <div class="channel-list" id="channel-list">
             <div class="sidebar-empty">Chargement…</div>
         </div>
     </aside>
@@ -378,7 +378,7 @@
     <div class="panel" id="panel">
         <div class="placeholder">
             <div class="icon">💬</div>
-            <p>Sélectionnez un canal pour afficher les messages.</p>
+            <p>Sélectionnez un channel pour afficher les messages.</p>
         </div>
     </div>
 
@@ -430,12 +430,12 @@
     let currentCanal = null;
 
     async function loadCanaux() {
-        const list = document.getElementById('canal-list');
+        const list = document.getElementById('channel-list');
         try {
             const res = await fetch(`${API_BASE}/channels/`, { headers: authHeaders() });
 
             if (res.status === 204) {
-                list.innerHTML = '<div class="sidebar-empty">Aucun canal disponible.</div>';
+                list.innerHTML = '<div class="sidebar-empty">Aucun channel disponible.</div>';
                 return;
             }
             if (!res.ok) {
@@ -446,15 +446,15 @@
             const canaux = await res.json();
             list.innerHTML = '';
 
-            canaux.forEach(canal => {
+            canaux.forEach(channel => {
                 const item = document.createElement('div');
-                item.className = 'canal-item';
-                item.dataset.id = canal.id;
+                item.className = 'channel-item';
+                item.dataset.id = channel.id;
                 item.innerHTML = `
-                    <span class="canal-icon">${canal.is_public ? '#' : '#'}</span>
-                    <span>${canal.nom}</span>
+                    <span class="channel-icon">${channel.is_public ? '#' : '#'}</span>
+                    <span>${channel.nom}</span>
                 `;
-                item.addEventListener('click', () => selectCanal(canal, item));
+                item.addEventListener('click', () => selectCanal(channel, item));
                 list.appendChild(item);
             });
 
@@ -463,24 +463,24 @@
         }
     }
 
-    function selectCanal(canal, itemEl) {
-        document.querySelectorAll('.canal-item').forEach(el => el.classList.remove('active'));
+    function selectCanal(channel, itemEl) {
+        document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
         itemEl.classList.add('active');
-        currentCanal = canal;
-        loadMessages(canal);
+        currentCanal = channel;
+        loadMessages(channel);
     }
 
     // ── Messages ─────────────────────────────────────────
 
-    async function loadMessages(canal) {
+    async function loadMessages(channel) {
         const panel = document.getElementById('panel');
 
         panel.innerHTML = `
             <div class="panel-header">
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <div>
-                        <h2>${canal.is_public ? '#' : '#'} ${canal.nom}</h2>
-                        <p>Créé par ${canal.id_createur}</p>
+                        <h2>${channel.is_public ? '#' : '#'} ${channel.nom}</h2>
+                        <p>Créé par ${channel.id_createur}</p>
                     </div>
                     <button class="btn-refresh" id="btn-refresh">↺ Rafraîchir</button>
                 </div>
@@ -493,7 +493,7 @@
         `;
 
         document.getElementById('btn-send').addEventListener('click', sendMessage);
-        document.getElementById('btn-refresh').addEventListener('click', () => fetchMessages(canal));
+        document.getElementById('btn-refresh').addEventListener('click', () => fetchMessages(channel));
         document.getElementById('msg-input').addEventListener('keydown', e => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -501,18 +501,18 @@
             }
         });
 
-        await fetchMessages(canal);
+        await fetchMessages(channel);
     }
 
-    async function fetchMessages(canal) {
+    async function fetchMessages(channel) {
         const messagesEl = document.getElementById('messages');
         if (!messagesEl) return;
 
         try {
-            const res = await fetch(`${API_BASE}/channels/${canal.id}/`, { headers: authHeaders() });
+            const res = await fetch(`${API_BASE}/channels/${channel.id}/`, { headers: authHeaders() });
 
             if (res.status === 204) {
-                messagesEl.innerHTML = '<div class="messages-empty">Aucun message dans ce canal.</div>';
+                messagesEl.innerHTML = '<div class="messages-empty">Aucun message dans ce channel.</div>';
                 return;
             }
             if (!res.ok) {
@@ -533,7 +533,7 @@
         if (!messagesEl) return;
 
         if (!messages.length) {
-            messagesEl.innerHTML = '<div class="messages-empty">Aucun message dans ce canal.</div>';
+            messagesEl.innerHTML = '<div class="messages-empty">Aucun message dans ce channel.</div>';
             return;
         }
 

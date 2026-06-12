@@ -1,5 +1,5 @@
 package dao;
-import dto.Canal;
+import dto.Channel;
 import dto.Message;
 
 import java.sql.*;
@@ -123,11 +123,11 @@ public class MessageDAOBD implements MessageDAO {
     }
 
     @Override
-    public ArrayList<Message> findAllInCanal(Canal canal) {
+    public ArrayList<Message> findAllInCanal(Channel channel) {
         try (Connection conn = db.getConnection()){
             String query = "SELECT * FROM message where idCanal=? order by id;";
             PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setInt(1, canal.getId());
+            stmt.setInt(1, channel.getId());
             ResultSet rs = stmt.executeQuery();
             ArrayList<Message> messages = new ArrayList<>();
             while(rs.next()){

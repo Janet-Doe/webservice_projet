@@ -1,6 +1,6 @@
 package dao;
 
-import dto.Canal;
+import dto.Channel;
 import dto.Message;
 
 import java.util.ArrayList;
@@ -11,5 +11,5 @@ public interface MessageDAO {
     boolean delete(Message message);
     Message save(Message message);
     void update(Message message);
-    ArrayList<Message> findAllInCanal(Canal canal);
+    ArrayList<Message> findAllInCanal(Channel channel);
 }
